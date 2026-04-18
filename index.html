@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBM HR Analytics — Attrition Intelligence by Jony</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0d12; --surface:#111520; --surface2:#161c28;
+  --border:rgba(255,255,255,0.07);
+  --accent:#ff4d4d; --accent2:#00e5a0; --accent3:#4d9fff; --accent4:#ffb84d;
+  --text:#e8edf5; --muted:#7a8499;
+  --danger:#ff4d4d; --safe:#00e5a0; --warn:#ffb84d;
+  --card-glow:0 0 0 1px rgba(255,255,255,0.06),0 8px 32px rgba(0,0,0,0.4);
+  --exp-bg:#0e1219; --exp-border:rgba(255,255,255,0.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0a0d12 0%,#111a2e 50%,#0a0d12 100%);border-bottom:1px solid var(--border);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);}
+.header-left{display:flex;align-items:center;gap:16px;}
+.logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),#ff8f4d);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:white;box-shadow:0 4px 20px rgba(255,77,77,0.4);}
+.header-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--text);}
+.header-sub{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.badge{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+.badge-live{background:rgba(0,229,160,.15);color:var(--accent2);border:1px solid rgba(0,229,160,.3);}
+.badge-emp{background:rgba(77,159,255,.15);color:var(--accent3);border:1px solid rgba(77,159,255,.3);}
+
+/* NAV */
+.nav-tabs{display:flex;gap:4px;padding:16px 40px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.tab-btn{padding:8px 20px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;white-space:nowrap;transition:all .2s;}
+.tab-btn:hover{background:rgba(255,255,255,.05);color:var(--text);}
+.tab-btn.active{background:rgba(255,77,77,.15);color:var(--accent);border:1px solid rgba(255,77,77,.3);}
+
+/* MAIN */
+.main{padding:32px 40px;max-width:1600px;margin:0 auto;}
+.section{display:none;animation:fadeIn .4s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:6px;background:linear-gradient(90deg,var(--text),var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.section-desc{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* SECTION SUMMARY */
+.section-summary{background:var(--exp-bg);border:1px solid var(--exp-border);border-left:4px solid var(--accent3);border-radius:12px;padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:900px){.section-summary{grid-template-columns:1fr;}}
+.ss-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent3);font-weight:700;margin-bottom:8px;}
+.ss-text{font-size:13px;color:#b0bdd4;line-height:1.7;}
+.ss-takeaways-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent4);font-weight:700;margin-bottom:10px;}
+.ss-takeaways{list-style:none;display:flex;flex-direction:column;gap:7px;}
+.ss-takeaways li{font-size:12px;color:#b0bdd4;padding-left:20px;position:relative;line-height:1.5;}
+.ss-takeaways li::before{content:'▸';position:absolute;left:0;color:var(--accent4);}
+.ss-takeaways li strong{color:var(--text);}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;box-shadow:var(--card-glow);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card.red::before{background:linear-gradient(90deg,var(--accent),transparent);}
+.kpi-card.green::before{background:linear-gradient(90deg,var(--accent2),transparent);}
+.kpi-card.blue::before{background:linear-gradient(90deg,var(--accent3),transparent);}
+.kpi-card.yellow::before{background:linear-gradient(90deg,var(--accent4),transparent);}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:600;line-height:1;}
+.kpi-card.red .kpi-value{color:var(--accent);}
+.kpi-card.green .kpi-value{color:var(--accent2);}
+.kpi-card.blue .kpi-value{color:var(--accent3);}
+.kpi-card.yellow .kpi-value{color:var(--accent4);}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;}
+.grid-1-2{display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:20px;}
+@media(max-width:1100px){.grid-2,.grid-3,.grid-1-2{grid-template-columns:1fr;}}
+
+/* CHART CARDS */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:var(--card-glow);transition:box-shadow .2s;}
+.chart-card:hover{box-shadow:0 12px 48px rgba(0,0,0,.5);}
+.chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.chart-title{font-size:14px;font-weight:600;color:var(--text);}
+.chart-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+.chart-tag{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.tag-red{background:rgba(255,77,77,.15);color:var(--accent);}
+.tag-green{background:rgba(0,229,160,.15);color:var(--accent2);}
+.tag-blue{background:rgba(77,159,255,.15);color:var(--accent3);}
+.tag-yellow{background:rgba(255,184,77,.15);color:var(--accent4);}
+.chart-wrap{position:relative;}
+.chart-wrap canvas{max-height:280px;}
+.chart-wrap.tall canvas{max-height:360px;}
+.chart-wrap.short canvas{max-height:200px;}
+
+/* EXPLANATION PANEL */
+.chart-explanation{margin-top:18px;padding-top:16px;border-top:1px solid var(--exp-border);}
+.exp-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:12px;font-weight:600;color:var(--accent3);background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;transition:color .2s;}
+.exp-toggle:hover{color:var(--text);}
+.exp-toggle .arrow{width:16px;height:16px;border-radius:50%;background:rgba(77,159,255,.15);display:inline-flex;align-items:center;justify-content:center;font-size:9px;transition:transform .25s;}
+.exp-toggle.open .arrow{transform:rotate(180deg);}
+.exp-body{display:none;margin-top:14px;background:var(--exp-bg);border:1px solid var(--exp-border);border-radius:10px;overflow:hidden;animation:expFade .25s ease;}
+.exp-body.open{display:block;}
+@keyframes expFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.exp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+@media(max-width:900px){.exp-row{grid-template-columns:1fr;}}
+.exp-col{padding:16px 18px;border-right:1px solid var(--exp-border);}
+.exp-col:last-child{border-right:none;}
+.exp-col-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.exp-col-label.what{color:#7dd3fc;}
+.exp-col-label.find{color:var(--accent4);}
+.exp-col-label.biz{color:var(--accent2);}
+.exp-col p{font-size:12px;color:#9aafc4;line-height:1.65;}
+.exp-col ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:4px;}
+.exp-col ul li{font-size:12px;color:#9aafc4;padding-left:18px;position:relative;line-height:1.55;}
+.exp-col ul li::before{content:'◆';position:absolute;left:0;font-size:7px;top:4px;}
+.exp-col.what ul li::before{color:#7dd3fc;}
+.exp-col.find ul li::before{color:var(--accent4);}
+.exp-col.biz ul li::before{color:var(--accent2);}
+.exp-col strong{color:var(--text);}
+.exp-col em{color:#c0cfdf;font-style:normal;font-weight:500;}
+.exp-col .tag-danger{color:var(--accent);background:rgba(255,77,77,.1);padding:1px 6px;border-radius:4px;font-size:11px;font-weight:700;}
+.exp-col .tag-good{color:var(--accent2);background:rgba(0,229,160,.1);padding:1px 6px;border-radius:4px;font-size:11px;font-weight:700;}
+.exp-col .tag-warn{color:var(--accent4);background:rgba(255,184,77,.1);padding:1px 6px;border-radius:4px;font-size:11px;font-weight:700;}
+.exp-col .cross-ref{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:6px;background:rgba(77,159,255,.1);border:1px solid rgba(77,159,255,.2);font-size:11px;color:#7dd3fc;cursor:pointer;}
+.exp-col .cross-ref:hover{background:rgba(77,159,255,.2);}
+
+/* HEATMAP */
+.heatmap-wrap{overflow-x:auto;}
+.heatmap-table{width:100%;border-collapse:separate;border-spacing:4px;font-size:12px;}
+.heatmap-table th{padding:8px 12px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.heatmap-table td{padding:10px 14px;border-radius:6px;text-align:center;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:13px;transition:transform .2s;cursor:default;}
+.heatmap-table td:hover{transform:scale(1.1);z-index:10;position:relative;}
+
+/* INSIGHTS */
+.insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;border-left:3px solid;}
+.insight-card.danger{border-left-color:var(--danger);}
+.insight-card.warn{border-left-color:var(--warn);}
+.insight-card.good{border-left-color:var(--safe);}
+.insight-card.info{border-left-color:var(--accent3);}
+.insight-icon{font-size:22px;margin-bottom:10px;}
+.insight-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.insight-text{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* CORR */
+.corr-grid{display:grid;gap:6px;}
+.corr-row{display:flex;align-items:center;gap:10px;}
+.corr-label{font-size:12px;color:var(--muted);width:190px;text-align:right;flex-shrink:0;}
+.corr-bar-wrap{flex:1;height:28px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;}
+.corr-bar{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;}
+.corr-val{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;}
+
+/* RECS */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+.rec-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.rec-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-bottom:14px;}
+.rec-title{font-size:15px;font-weight:700;margin-bottom:8px;}
+.rec-text{font-size:13px;color:var(--muted);line-height:1.65;}
+.rec-impact{margin-top:14px;padding:8px 12px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.5px;}
+
+/* OVERALL SUMMARY */
+.overall-summary{background:linear-gradient(135deg,#0e1520 0%,#111a2c 100%);border:1px solid rgba(77,159,255,.2);border-radius:16px;padding:32px;margin-top:32px;}
+.os-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--text);margin-bottom:6px;}
+.os-subtitle{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.os-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+@media(max-width:1000px){.os-grid{grid-template-columns:1fr;}}
+.os-panel{background:rgba(255,255,255,.03);border:1px solid var(--exp-border);border-radius:12px;padding:20px;}
+.os-panel-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--exp-border);}
+.os-panel-title.red{color:var(--accent);}
+.os-panel-title.yellow{color:var(--accent4);}
+.os-panel-title.green{color:var(--accent2);}
+.os-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.os-list li{font-size:13px;color:#9aafc4;padding-left:28px;position:relative;line-height:1.55;}
+.os-list li::before{position:absolute;left:0;font-size:13px;}
+.os-list.findings li::before{content:'🔴';}
+.os-list.reasons li::before{content:'⚠️';}
+.os-list.actions li::before{content:'✅';}
+.os-list li strong{color:var(--text);}
+
+/* KPI STRIP */
+.kpi-exp-strip{background:var(--exp-bg);border:1px solid var(--exp-border);border-radius:10px;padding:16px 20px;margin-bottom:28px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+.kpi-exp-strip .kei{font-size:20px;margin-top:2px;flex-shrink:0;}
+.kpi-exp-strip .ket{font-size:12px;color:#9aafc4;line-height:1.65;flex:1;min-width:260px;}
+.kpi-exp-strip .ket strong{color:var(--text);}
+
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">HR</div>
+    <div>
+      <div class="header-title">IBM HR Analytics — Attrition Intelligence by Jony</div>
+      <div class="header-sub">Workforce Data · 1,470 Employees · IBM Watson Dataset</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-live">● Live Analysis</span>
+    <span class="badge badge-emp">1,470 Records</span>
+  </div>
+</header>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showSection('overview',this)">📊 Overview</button>
+  <button class="tab-btn" onclick="showSection('attrition',this)">🔥 Attrition</button>
+  <button class="tab-btn" onclick="showSection('salary',this)">💰 Salary</button>
+  <button class="tab-btn" onclick="showSection('worklife',this)">⚖️ Work-Life</button>
+  <button class="tab-btn" onclick="showSection('performance',this)">📈 Performance</button>
+  <button class="tab-btn" onclick="showSection('experience',this)">🏢 Experience</button>
+  <button class="tab-btn" onclick="showSection('correlation',this)">🔗 Correlations</button>
+  <button class="tab-btn" onclick="showSection('insights',this)">💡 Insights</button>
+  <button class="tab-btn" onclick="showSection('recommendations',this)">🎯 Actions</button>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════════ OVERVIEW ══════════════════════ -->
+<section class="section active" id="overview">
+  <div class="section-title">Workforce Overview</div>
+  <div class="section-desc">High-level snapshot of IBM's HR dataset — 1,470 employees across 3 departments</div>
+
+  <div class="section-summary">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">This section gives a bird's-eye view of IBM's entire workforce. Out of <strong>1,470 employees</strong>, <strong>237 have left</strong> — a <strong>16.1% attrition rate</strong>, well above the healthy industry benchmark of 10–12%. The workforce skews young (peak age 30–34), is majority male (60%), and is heavily concentrated in Research & Development. These overview charts set the context for all deeper analysis in the sections that follow.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>16.1% attrition</strong> — 4–6 percentage points above the healthy 10–12% benchmark (34–61% higher in relative terms)</li>
+        <li>R&D is the <strong>largest dept</strong> with 961 employees (65% of workforce)</li>
+        <li>Workforce peaks at <strong>ages 30–34</strong> — a young, mobile talent base</li>
+        <li>Nearly <strong>1 in 3 employees</strong> works overtime — systemic burnout risk</li>
+        <li>Gender is relatively balanced: <strong>60% male, 40% female</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card blue"><div class="kpi-label">Total Employees</div><div class="kpi-value">1,470</div><div class="kpi-sub">Active + Departed</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Attrition Rate</div><div class="kpi-value">16.1%</div><div class="kpi-sub">237 employees left</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Retention Rate</div><div class="kpi-value">83.9%</div><div class="kpi-sub">1,233 employees stayed</div></div>
+    <div class="kpi-card yellow"><div class="kpi-label">Avg Monthly Income</div><div class="kpi-value">$6.5K</div><div class="kpi-sub">Across all roles</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Overtime Workers</div><div class="kpi-value">28.6%</div><div class="kpi-sub">416 employees</div></div>
+  </div>
+
+  <div class="kpi-exp-strip">
+    <div class="kei">📌</div>
+    <div class="ket"><strong>Reading these KPIs:</strong> The <strong>16.1% attrition rate</strong> means 1 in 6 employees left — 40% higher than a healthy organisation. The <strong>average income of $6.5K/mo masks huge inequality</strong>: Managers earn ~$17K while Sales Reps earn ~$2.6K. With <strong>28.6% working overtime</strong>, burnout is widespread. These five numbers together tell a story of an overstretched, under-compensated workforce — explore each section for deeper analysis.</div>
+  </div>
+
+  <div class="grid-1-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Overall Attrition Split</div><div class="chart-subtitle">Employees who Left vs Stayed</div></div>
+        <span class="chart-tag tag-red">CRITICAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="attrDonut"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>donut chart</strong> dividing all 1,470 employees into two groups: those who left the company (<strong>Attrition = Yes</strong>) shown in red, and those who stayed (<strong>Attrition = No</strong>) shown in green. The size of each slice represents the proportion.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><span class="tag-danger">237 employees (16.1%)</span> left the company</li>
+              <li><span class="tag-good">1,233 employees (83.9%)</span> remained</li>
+              <li>Industry healthy benchmark is <strong>10–12% attrition</strong></li>
+              <li>IBM's rate of 16.1% is <strong>4–6 percentage points above</strong> the healthy 10–12% benchmark — that is 34–61% higher in relative terms</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ See detailed Attrition breakdown by dept, role & age</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Replacing one employee costs <strong>50–200% of their annual salary</strong>. With 237 departures at avg $6.5K/mo, IBM's estimated annual replacement cost is <strong>$9–37 million</strong>. Even a 5% attrition reduction would save millions. The Attrition section identifies exactly <em>which</em> groups to target first.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Employees by Department</div><div class="chart-subtitle">X-Axis: Department Name &nbsp;|&nbsp; Y-Axis: Number of Employees</div></div>
+        <span class="chart-tag tag-blue">OVERVIEW</span>
+      </div>
+      <div class="chart-wrap"><canvas id="deptBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists the 3 departments</strong> (Research & Development, Sales, Human Resources). The <strong>Y-axis shows the total number of employees</strong> in each department. Taller bars = more employees.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>R&D: <strong>961 employees</strong> — 65% of the entire workforce</li>
+              <li>Sales: <strong>446 employees</strong> — 30% of workforce</li>
+              <li>HR: <strong>63 employees</strong> — just 4.3%, the smallest dept</li>
+              <li>R&D's scale means even small rate changes have large absolute impact</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ See Attrition Rate by Department to understand risk per dept</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>R&D's size dominance means its 13.8% attrition rate results in <strong>133 departures in absolute terms</strong> — more than Sales (92) despite a lower rate. Resource planning must address <em>both</em> the Sales rate problem <em>and</em> R&D's absolute volume problem simultaneously.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Gender Distribution</div><div class="chart-subtitle">Male vs Female — proportion of total workforce</div></div>
+        <span class="chart-tag tag-blue">DEMO</span>
+      </div>
+      <div class="chart-wrap short"><canvas id="genderPie"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>pie chart</strong> showing the male-to-female ratio across all 1,470 employees. Each slice represents one gender, sized by their share of the total workforce.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><strong>882 male employees</strong> — 60.4% of workforce</li>
+              <li><strong>588 female employees</strong> — 39.6% of workforce</li>
+              <li>Male attrition rate: <span class="tag-danger">17.0%</span> vs Female: <span class="tag-warn">14.8%</span></li>
+              <li>Men leave at a slightly higher rate — likely role distribution effect</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ See Attrition by Gender donut in the Attrition section</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The gender split is relatively balanced. The slightly higher male attrition likely reflects that males dominate high-attrition roles like Sales Representatives. DEI pay equity audits remain best practice, but no gender-specific retention crisis exists here.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Age Distribution of Workforce</div><div class="chart-subtitle">X-Axis: Age Group (5-year bands) &nbsp;|&nbsp; Y-Axis: Number of Employees</div></div>
+        <span class="chart-tag tag-green">DEMO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="ageHist"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>histogram (bar chart)</strong> grouping employees into 5-year age bands on the <strong>X-axis</strong> (e.g. "25–29", "30–34"). The <strong>Y-axis counts how many employees</strong> fall in each age band. Bars touching = continuous age data.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Peak: <strong>325 employees aged 30–34</strong> — the dominant age band</li>
+              <li>Ages 25–39 account for <strong>~53% of the entire workforce</strong></li>
+              <li>Sharp drop-off after age 50 — few senior employees remain</li>
+              <li>Very small entry-level cohort (15–19): only 17 employees</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ Compare with Attrition by Age Group — young staff leave far more</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>A young workforce is innovative but volatile. Employees aged 25–34 have the highest <em>absolute</em> attrition counts and are actively exploring career options. IBM must offer <strong>compelling growth paths and competitive salaries</strong> to retain this pipeline before competitors do.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ ATTRITION ══════════════════════ -->
+<section class="section" id="attrition">
+  <div class="section-title">Attrition Analysis</div>
+  <div class="section-desc">Identifying high-risk segments — departments, roles, age groups, gender, and education fields</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">Attrition is not evenly distributed — it clusters in specific roles, departments, and age groups. <strong>Sales Representatives</strong> face the highest role-level attrition at 39.8%, while the <strong>18–24 age group</strong> has a 39.2% departure rate. Understanding exactly <em>where</em> attrition is highest allows targeted, cost-effective intervention. These charts should be read alongside the <strong>Salary section</strong> (low pay → high attrition) and the <strong>Work-Life section</strong> (overtime → high attrition) to understand the full cause-and-effect chain.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>Sales dept has highest attrition rate: 20.6%</strong> vs R&D's 13.8%</li>
+        <li><strong>Sales Representatives: 39.8%</strong> — nearly 2 in 5 leave per year</li>
+        <li>Age 18–24 is most vulnerable — <strong>39.2% departure rate</strong></li>
+        <li>Male attrition (17%) slightly exceeds female (14.8%)</li>
+        <li>HR education field shows <strong>highest attrition rate: 25.9%</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Attrition Count by Department</div><div class="chart-subtitle">X-Axis: Department &nbsp;|&nbsp; Y-Axis: Number of Employees (stacked Left + Stayed)</div></div>
+        <span class="chart-tag tag-red">HIGH RISK</span>
+      </div>
+      <div class="chart-wrap"><canvas id="deptAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>stacked bar chart</strong>. The <strong>X-axis lists the 3 departments</strong>. The <strong>Y-axis shows total employee count</strong>. Each bar is stacked: the <strong>red portion = employees who left</strong>, the <strong>green portion = employees who stayed</strong>. Read the red slice height for attrition numbers.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Sales: <span class="tag-danger">92 left</span> out of 446 — <strong>20.6% attrition rate</strong> — most alarming dept</li>
+              <li>R&D: <span class="tag-warn">133 left</span> out of 961 — <strong>13.8% attrition rate</strong> — highest count but lowest rate</li>
+              <li>HR: <span class="tag-warn">12 left</span> out of 63 — <strong>19.0% attrition rate</strong> — small dept, proportionally at risk</li>
+              <li>⚠️ R&D's bar looks tallest (big green section) only because it has 961 employees — do NOT read bar height as "biggest problem"</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ The next chart (Attrition Rate %) normalises for dept size — Sales clearly emerges as the most critical department</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>This chart shows <strong>absolute headcount only</strong> — it can be misleading. R&D's tall bar simply reflects its large workforce (961 people), not a proportionally worse problem. Sales lost only 92 people in absolute terms, but at a <strong>20.6% rate</strong> — meaning nearly 1 in 5 Sales employees left. Always read this chart alongside the Attrition Rate % chart to get the full picture. The rate chart is the more actionable one for business decisions.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Attrition Rate (%) by Department</div><div class="chart-subtitle">X-Axis: Department (same order as stacked chart) &nbsp;|&nbsp; Y-Axis: Attrition Rate (% of dept that left)</div></div>
+        <span class="chart-tag tag-red">RATE %</span>
+      </div>
+      <div class="chart-wrap"><canvas id="deptAttrRate"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists the 3 departments</strong>. The <strong>Y-axis shows the attrition rate as a percentage</strong> (i.e., what fraction of each department's employees left). This normalises for department size, making comparisons fair.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><span class="tag-danger">Sales: 20.6%</span> — highest attrition rate (92 of 446 left)</li>
+              <li><span class="tag-good">R&D: 13.8%</span> — lowest rate, best-performing dept (133 of 961 left)</li>
+              <li><span class="tag-warn">HR: 19.0%</span> — second highest rate (12 of 63 left)</li>
+              <li>Sales attrition rate is <strong>49% higher</strong> than R&D — same order as the stacked chart next to it</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('salary',null)">→ Salary section: Sales Reps earn the least ($2,626/mo) — a direct causal link to this high rate</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Note: the bars here follow the same left-to-right order as the Stacked Count chart (Sales → R&D → HR) so you can directly compare counts vs rates side by side. A 20.6% Sales attrition means <strong>1 in 5 Sales staff leaves every year</strong> — creating constant ramp-up cost and lost client relationships. The Salary section confirms Sales Reps earn the lowest wages, making this a direct pay-attrition link.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-header">
+      <div><div class="chart-title">Attrition Rate (%) by Job Role — Sorted Highest to Lowest</div><div class="chart-subtitle">Y-Axis: Job Role &nbsp;|&nbsp; X-Axis: Attrition Rate (%) — colour-coded by risk level</div></div>
+      <span class="chart-tag tag-red">SORTED ↓</span>
+    </div>
+    <div class="chart-wrap tall"><canvas id="roleAttrBar"></canvas></div>
+    <div class="chart-explanation">
+      <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+      <div class="exp-body"><div class="exp-row">
+        <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+          <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from highest attrition at the top to lowest at the bottom. The <strong>X-axis shows attrition rate (%)</strong> — how many from each role left. Bars are <span class="tag-danger">red ≥ 25%</span>, <span class="tag-warn">yellow 15–24%</span>, <span class="tag-good">green &lt; 15%</span>.</p>
+        </div>
+        <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings (all 9 roles)</div>
+          <ul>
+            <li><span class="tag-danger">Sales Representative: 39.8%</span> — #1 risk (33/83 left)</li>
+            <li><span class="tag-danger">Laboratory Technician: 23.9%</span> — (62/259 left)</li>
+            <li><span class="tag-danger">Human Resources: 23.1%</span> — (12/52 left)</li>
+            <li><span class="tag-warn">Sales Executive: 17.5%</span> — elevated (57/326 left)</li>
+            <li><span class="tag-warn">Research Scientist: 16.1%</span> — at avg (47/292 left)</li>
+            <li><span class="tag-good">Mfg Director &amp; Healthcare Rep: 6.9%</span> — tied, low risk</li>
+            <li><span class="tag-good">Manager: 4.9%</span> &amp; <span class="tag-good">Research Director: 2.5%</span> — most stable</li>
+          </ul>
+          <span class="cross-ref" onclick="showSection('salary',null)">→ Salary section: same 3 highest-attrition roles also earn the least — direct pay-attrition causal link</span>
+        </div>
+        <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+          <p>There is a clear <strong>seniority-retention gradient</strong>: the more junior the role, the higher the attrition. Sales Reps, Lab Technicians, and HR staff are the three highest-risk roles. Cross-reference with the Average Income by Job Role chart in the Salary section — these three roles also earn the least, confirming pay is a primary driver.</p>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Attrition Count by Age Group</div><div class="chart-subtitle">X-Axis: Age Group &nbsp;|&nbsp; Y-Axis: Number of Employees</div></div>
+        <span class="chart-tag tag-red">AGE</span>
+      </div>
+      <div class="chart-wrap"><canvas id="ageAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>grouped (clustered) bar chart</strong>. The <strong>X-axis shows 5 age groups</strong> (18–24 through 55+). For each group, there are <strong>two side-by-side bars</strong>: red = employees who left, green = employees who stayed. The <strong>Y-axis counts employees</strong>. Compare red bar height vs green to see the attrition gap per age group.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>18–24: <span class="tag-danger">38 left vs only 59 stayed</span> — 39.2% attrition rate</li>
+              <li>25–34: <span class="tag-danger">112 left</span> — highest absolute departures</li>
+              <li>Attrition decreases consistently with age (red bars shrink)</li>
+              <li>55+: <span class="tag-warn">11 left</span> — likely retirement/transition</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('experience',null)">→ Experience section: Years at Company chart shows year-0–1 as peak risk window</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The 18–34 age group represents IBM's future leadership pipeline. The 25–34 group alone accounts for <strong>112 departures — 47% of all attrition</strong>. Without early-career retention programs, IBM is systematically losing its next generation of leaders to competitors offering faster advancement and better pay.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Attrition by Gender</div><div class="chart-subtitle">Male vs Female — who left vs stayed</div></div>
+        <span class="chart-tag tag-blue">GENDER</span>
+      </div>
+      <div class="chart-wrap short"><canvas id="genderAttrDonut"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>segmented donut chart</strong> with four segments showing: Male who left (dark red), Male who stayed (blue), Female who left (light red/pink), Female who stayed (light pink). Segment size = employee count. Compare red-toned segments to assess gender-based attrition risk.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><strong>150 males left</strong> — 17.0% of all male employees</li>
+              <li><strong>87 females left</strong> — 14.8% of all female employees</li>
+              <li>Male attrition rate is <strong>~15% higher</strong> than female in relative terms</li>
+              <li>Both genders are well above the healthy 10–12% benchmark</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('overview',null)">→ Gender Distribution pie (Overview) shows the base: 882 male, 588 female</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The gender attrition gap is modest. Since males dominate high-attrition roles like Sales Representatives, the gap likely reflects <em>role distribution</em> rather than gender-specific issues. Pay equity audits remain best practice, but targeted gender programs are not the priority — role restructuring is.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Attrition Rate (%) by Education Field</div><div class="chart-subtitle">X-Axis: Education Field &nbsp;|&nbsp; Y-Axis: Attrition Rate (%)</div></div>
+        <span class="chart-tag tag-red">EDU</span>
+      </div>
+      <div class="chart-wrap"><canvas id="eduAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists 6 education fields</strong> (Life Sciences, Medical, Marketing, Technical Degree, Human Resources, Other), sorted by attrition rate (highest left). The <strong>Y-axis shows attrition rate (%)</strong> — what proportion of employees with each education field left. Colour-coded by risk level.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><span class="tag-danger">HR Education: 25.9%</span> — highest field attrition</li>
+              <li><span class="tag-danger">Technical Degree: 24.2%</span> — high external demand</li>
+              <li><span class="tag-warn">Marketing: 22.0%</span> — competitive job market</li>
+              <li><span class="tag-good">Life Sciences: 14.7%</span> — most stable education field</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ Compare with Attrition by Job Role — HR & Technical role attrition aligns</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Employees with HR and Technical degrees have highly transferable, market-valued skills. They face strong external pull from tech companies and startups. IBM must offer <strong>competitive compensation, interesting projects, and clear advancement paths</strong> to retain these high-demand profiles.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ SALARY ══════════════════════ -->
+<section class="section" id="salary">
+  <div class="section-title">Salary & Compensation</div>
+  <div class="section-desc">Income distribution, compensation gaps between leavers vs stayers, salary hike comparison, and pay by job role</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent4)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">Compensation is one of the strongest levers in attrition prevention. Employees who left earned a <strong>median of $3,202/mo</strong> — 38% less than those who stayed ($5,204/mo). The salary distribution is heavily right-skewed: most employees cluster in the $2K–$6K range. Crucially, the <strong>salary hike % is nearly identical</strong> between leavers and stayers — meaning the problem is <em>base pay level</em>, not annual raises. Cross-reference these charts with the Attrition by Job Role chart to see how the lowest-paid roles are also the highest-attrition ones.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li>Employees who left earned <strong>38% less</strong> (median: $3,202 vs $5,204)</li>
+        <li>Sales Representatives earn the <strong>lowest: $2,626/mo</strong></li>
+        <li>Managers earn <strong>6.5× more</strong> than Sales Reps — extreme inequality</li>
+        <li><strong>Salary hike % is equal</strong> for leavers and stayers — base pay is the fix</li>
+        <li>Over 540 employees earn <strong>$2K–$4K/mo</strong> — the highest-risk income band</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Monthly Income Distribution (All Employees)</div><div class="chart-subtitle">X-Axis: Monthly Income Range ($) &nbsp;|&nbsp; Y-Axis: Number of Employees in each range</div></div>
+        <span class="chart-tag tag-blue">DIST</span>
+      </div>
+      <div class="chart-wrap"><canvas id="incomeHist"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>histogram</strong>. The <strong>X-axis divides monthly income into $2,000-wide brackets</strong> (e.g., "$0–$2K", "$2K–$4K", up to "$18K–$20K"). The <strong>Y-axis counts how many employees</strong> fall in each bracket. Taller bars = more employees earning in that range. The shape reveals income inequality across the organisation.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Largest bar: <strong>509 employees earn $2K–$4K/mo</strong> — biggest single group</li>
+              <li>Right-skewed: <strong>most earn low, few earn very high</strong></li>
+              <li>Only 126 employees earn above $16K — a small executive tier</li>
+              <li>33 employees earn below $2K — extremely low-income roles</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('salary',null)">→ Next chart: Income vs Attrition shows leavers cluster in the $2K–$4K zone</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The average income of $6.5K is <strong>misleading</strong> — it's pulled up by executives. The real story is that most employees earn $2K–$6K. Raising the salary floor for the 540+ employees in the $2K–$4K bracket would directly target the highest-attrition income group with a targeted cost.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Monthly Income: Left vs Stayed (Median Comparison)</div><div class="chart-subtitle">X-Axis: Attrition Status &nbsp;|&nbsp; Y-Axis: Monthly Income ($) — showing Median, Mean, Q1 &amp; Q3</div></div>
+        <span class="chart-tag tag-red">COMPARISON</span>
+      </div>
+      <div class="chart-wrap"><canvas id="incomeCompare"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>grouped bar chart</strong> comparing income statistics between employees who <strong>Left (red bars)</strong> and those who <strong>Stayed (green bars)</strong>. The <strong>X-axis shows 4 income measures</strong>: Median Income, Mean (Average) Income, Q1 (25th percentile), and Q3 (75th percentile). The <strong>Y-axis shows the dollar amount ($)</strong>. For every measure, the "Left" bar is red and the "Stayed" bar is green — directly compare heights to see the gap.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Median: <span class="tag-danger">Left: $3,202</span> vs <span class="tag-good">Stayed: $5,204</span> — 38% lower</li>
+              <li>Mean: <span class="tag-danger">Left: $4,787</span> vs <span class="tag-good">Stayed: $6,832</span> — 30% lower</li>
+              <li>Q1: Left $2,373 vs Stayed $3,211 — even the bottom 25% earn less</li>
+              <li>Q3: Left $5,916 vs Stayed $8,834 — the top earners who left still earned less</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('salary',null)">→ See Income Distribution histogram to understand how most employees earn below $6K</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Every single income measure is significantly lower for employees who left. This is the clearest compensation signal in the entire dataset: <strong>low pay causes departure</strong>. The median gap of $2,002/mo means leavers would need a ~$24K/year raise to match stayers' median — a significant but quantifiable target for salary band reform.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Salary Hike % — Left vs Stayed (Comparison)</div><div class="chart-subtitle">X-Axis: Hike % Statistics &nbsp;|&nbsp; Y-Axis: Percent Salary Hike (%) — Left vs Stayed side-by-side</div></div>
+        <span class="chart-tag tag-yellow">HIKE</span>
+      </div>
+      <div class="chart-wrap"><canvas id="hikeCompare"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>grouped bar chart</strong> comparing annual salary hike percentages between employees who <strong>Left (red)</strong> and those who <strong>Stayed (green)</strong>. The <strong>X-axis shows 3 statistical measures</strong>: Median Hike, Q1 (lower end), Q3 (upper end). The <strong>Y-axis shows the percentage hike (%)</strong> received. If both groups received similar hikes, the bars will be nearly the same height — meaning raises are NOT the differentiator.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Median hike: <strong>Left = 14%, Stayed = 14%</strong> — completely identical</li>
+              <li>Q1 hike: <strong>both groups = 12%</strong> — no difference at lower end</li>
+              <li>Q3 hike: Left = 17%, Stayed = 18% — trivially small gap</li>
+              <li>Conclusion: <strong>salary raise % does NOT predict attrition</strong></li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('salary',null)">→ Critical contrast: the previous Income Comparison chart shows a HUGE median income gap — base pay matters, not raises</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>This chart dismantles a common management assumption: <em>"give them a bigger raise and they'll stay."</em> Since leavers and stayers received the same raise percentages, raises don't solve the problem. The <strong>base salary level</strong> is what matters. Structural pay band reform for junior roles is the required action — not one-off performance bonuses.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Average Monthly Income by Job Role</div><div class="chart-subtitle">Y-Axis: Job Role &nbsp;|&nbsp; X-Axis: Average Monthly Income ($) — sorted highest to lowest</div></div>
+        <span class="chart-tag tag-green">ROLE $</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="roleIncomeBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from highest-earning at the top to lowest at the bottom. The <strong>X-axis shows average monthly income in dollars</strong>. Bar length directly indicates earnings. Colour-coded: <span class="tag-good">green = top earners (&gt;$10K)</span>, blue = mid-range, <span class="tag-warn">yellow = low earners (&lt;$5K)</span>.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><span class="tag-good">Manager: $17,182/mo</span> — highest-paid role by far</li>
+              <li>Research Director: <strong>$16,034/mo</strong> — second highest</li>
+              <li><span class="tag-warn">Laboratory Technician: $3,237/mo</span> — near bottom</li>
+              <li><span class="tag-warn">Sales Representative: $2,626/mo</span> — lowest-paid role</li>
+              <li>Pay gap: Managers earn <strong>6.5× more</strong> than Sales Reps</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ Cross-check Attrition by Job Role: Sales Rep (39.8%) and Lab Tech (23.9%) are also lowest paid — direct correlation</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The bottom three earners — Sales Reps, Lab Technicians, and HR staff — are also the top three attrition roles. This is not coincidence. <strong>Low pay = high attrition</strong>, and this chart quantifies exactly how much a salary adjustment is needed for each role to reach competitive pay levels.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ WORK-LIFE ══════════════════════ -->
+<section class="section" id="worklife">
+  <div class="section-title">Work-Life Balance & Overtime</div>
+  <div class="section-desc">How overtime and work-life balance ratings drive attrition — and the satisfaction relationship heatmap</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">Overtime is the <strong>single strongest predictor of attrition</strong> in this entire dataset (correlation: +0.25 — see Correlations section). Overtime workers leave at <strong>30.5%</strong> — nearly 3× the rate of non-OT staff (10.4%). Poor work-life balance (Rating 1) adds another layer of risk at 31.2% attrition. The satisfaction heatmap shows most employees cluster at the "middling" zone (JS=3, WLB=3), indicating a workforce that is functional but not thriving or engaged.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>Overtime workers: 30.5% attrition</strong> vs non-OT: 10.4% — nearly 3× higher</li>
+        <li>Poor WLB (Rating 1) shows <strong>31.2% attrition</strong> — the highest WLB band</li>
+        <li>416 employees work overtime — <strong>systemic overload, not individual choice</strong></li>
+        <li>Most employees rate WLB as "3 — Good" — a mediocre middle, not thriving</li>
+        <li>JS×WLB heatmap shows the <strong>JS:3 × WLB:3 cell dominates</strong> (273 employees)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Overtime vs Attrition — Employees Who Left vs Stayed</div><div class="chart-subtitle">X-Axis: Overtime Status (Yes/No) &nbsp;|&nbsp; Y-Axis: Number of Employees (stacked Left + Stayed)</div></div>
+        <span class="chart-tag tag-red">OVERTIME</span>
+      </div>
+      <div class="chart-wrap"><canvas id="otAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>stacked bar chart</strong>. The <strong>X-axis has two categories</strong>: "Overtime: Yes" (employees who work OT) and "Overtime: No" (employees who don't). The <strong>Y-axis counts total employees</strong>. Each bar is stacked: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. A tall red slice on the OT-Yes bar indicates overtime workers leave far more.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Overtime Yes: <span class="tag-danger">127 left</span> out of 416 = <strong>30.5% attrition rate</strong></li>
+              <li>Overtime No: <span class="tag-good">110 left</span> out of 1,054 = <strong>10.4% attrition rate</strong></li>
+              <li>Overtime workers leave at <strong>nearly 3× the rate</strong> of non-OT workers</li>
+              <li>Overtime has the <strong>highest correlation with attrition</strong> of all variables (r=+0.25)</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('correlation',null)">→ Correlations section confirms: OverTime (r=+0.25) is the #1 predictor of leaving</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>This is the most actionable chart in the entire dashboard. Cutting overtime has the <strong>highest return on investment</strong> of any HR intervention. Hiring one additional employee to eliminate overtime for 5 existing employees is extremely cost-effective when each departure costs 50–200% of an annual salary.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Work-Life Balance Rating vs Attrition Count</div><div class="chart-subtitle">X-Axis: WLB Rating (1=Bad to 4=Excellent) &nbsp;|&nbsp; Y-Axis: Number of Employees</div></div>
+        <span class="chart-tag tag-yellow">WLB</span>
+      </div>
+      <div class="chart-wrap"><canvas id="wlbAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>grouped bar chart</strong>. The <strong>X-axis shows 4 Work-Life Balance ratings</strong>: 1 (Bad), 2 (Fair), 3 (Good), 4 (Excellent). For each rating, two bars appear side by side: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. The <strong>Y-axis counts employees</strong>. Compare red vs green bar height at each rating to see attrition risk at that WLB level.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>WLB 1 (Bad): <span class="tag-danger">25 left out of 80 = 31.2%</span> attrition — worst</li>
+              <li>WLB 2 (Fair): <span class="tag-warn">58 left out of 344 = 16.9%</span></li>
+              <li>WLB 3 (Good): 127 left out of 893 = <strong>14.2%</strong> — most employees here</li>
+              <li>WLB 4 (Excellent): 27 left out of 153 = <strong>17.6%</strong> — slight rise</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('worklife',null)">→ Compare with Overtime chart: OT workers overlap heavily with WLB Rating 1 employees</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Poor WLB (Rating 1) triples departure risk compared to Rating 3. The slight uptick at Rating 4 may reflect high performers who have great balance but still leave for better opportunities — a different problem (career ceiling) needing different solutions (promotion paths) than burnout at Rating 1.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div><div class="chart-title">Job Satisfaction × Work-Life Balance Heatmap</div><div class="chart-subtitle">Row (Y): Job Satisfaction rating (1=Low → 4=High) &nbsp;|&nbsp; Column (X): WLB rating (1=Bad → 4=Excellent) &nbsp;|&nbsp; Cell value = Employee Count &nbsp;|&nbsp; Darker blue = more employees</div></div>
+      <span class="chart-tag tag-blue">HEATMAP</span>
+    </div>
+    <div class="heatmap-wrap" id="jsWlbHeatmap"></div>
+    <div class="chart-explanation">
+      <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+      <div class="exp-body"><div class="exp-row">
+        <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+          <p>A <strong>4×4 heatmap table</strong>. Each <strong>row represents a Job Satisfaction level</strong> (1=Low to 4=High). Each <strong>column represents a Work-Life Balance rating</strong> (1=Bad to 4=Excellent). The number in each cell = employees with that exact combination. <strong>Darker blue = more employees</strong>. Read across a row to see WLB distribution within a satisfaction level; read down a column to compare satisfaction levels at the same WLB.</p>
+        </div>
+        <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+          <ul>
+            <li><strong>JS:3 × WLB:3 has 273 employees</strong> — the largest single cell</li>
+            <li>Most employees cluster in <strong>WLB columns 2 and 3</strong> — "fair" to "good"</li>
+            <li>Very few reach top-left (JS:1 × WLB:1): only <strong>17 employees</strong> — but they are highest risk</li>
+            <li>Bottom-right (JS:4 × WLB:4): only <strong>48 employees</strong> — truly engaged workforce is tiny</li>
+          </ul>
+          <span class="cross-ref" onclick="showSection('worklife',null)">→ Cross-ref WLB Rating vs Attrition above: WLB=1 has 31.2% attrition — those 17 JS:1×WLB:1 employees are the highest-risk group</span>
+        </div>
+        <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+          <p>IBM has a "<strong>mediocre middle</strong>" workforce — most employees feel average on both dimensions. Only 48 employees (3.3%) report both high job satisfaction AND excellent WLB. Moving employees from the JS:3/WLB:3 zone to JS:4/WLB:4 requires enriching roles, better management, and reducing overtime — all addressable through the Action Plan (🎯 section).</p>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ PERFORMANCE ══════════════════════ -->
+<section class="section" id="performance">
+  <div class="section-title">Performance Analysis</div>
+  <div class="section-desc">Performance rating distribution, its link to attrition, training effectiveness, and job satisfaction by role</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent2)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">IBM uses only two performance ratings in practice: <strong>3 (Excellent) and 4 (Outstanding)</strong> — meaning every employee is rated above-average. This compressed scale means performance scores cannot differentiate attrition risk (both groups leave at ~16%). More strikingly, <strong>training frequency has zero impact on performance</strong> — ratings remain flat at ~3.15 regardless of how many sessions an employee attends. Job satisfaction across all roles is uniformly below the midpoint at ~2.7/4.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>84.6% are rated "Excellent" (3)</strong> — compressed scale limits insight</li>
+        <li>Attrition rate is nearly identical for Rating 3 (16.1%) and Rating 4 (16.4%)</li>
+        <li><strong>Training has no measurable effect on performance scores</strong></li>
+        <li>Healthcare Reps report <strong>highest satisfaction (2.79)</strong>; HR reports lowest (2.56)</li>
+        <li>All roles score <strong>below 2.8/4</strong> — universal satisfaction problem</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Performance Rating Distribution</div><div class="chart-subtitle">X-Axis: Performance Rating &nbsp;|&nbsp; Y-Axis: Number of Employees at each rating</div></div>
+        <span class="chart-tag tag-green">DIST</span>
+      </div>
+      <div class="chart-wrap short"><canvas id="perfDist"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>vertical bar chart</strong>. The <strong>X-axis shows the two performance ratings used</strong>: Rating 3 (Excellent) and Rating 4 (Outstanding). The <strong>Y-axis shows the count of employees</strong> who received each rating. Note: ratings 1 and 2 do not appear in the dataset — IBM's system effectively gives everyone a "pass" rating.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li><strong>1,244 employees (84.6%)</strong> rated "Excellent" (Rating 3)</li>
+              <li><strong>226 employees (15.4%)</strong> rated "Outstanding" (Rating 4)</li>
+              <li>No employees rated 1 or 2 — suggests <strong>grade inflation or narrow scale</strong></li>
+              <li>The scale cannot differentiate low, average, and high performers</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('performance',null)">→ See next chart: both ratings show nearly identical attrition rates — rating doesn't predict leaving</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>When 85% of employees share one rating, the system loses predictive power. IBM should expand to a 5-point scale to better identify high-potential employees (who need fast-track programs) from struggling ones (who need coaching). Without this, targeted retention programs for top performers cannot be properly scoped.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Performance Rating vs Attrition Count</div><div class="chart-subtitle">X-Axis: Performance Rating &nbsp;|&nbsp; Y-Axis: Number of Employees (stacked Left + Stayed)</div></div>
+        <span class="chart-tag tag-red">PERF+ATTR</span>
+      </div>
+      <div class="chart-wrap short"><canvas id="perfAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>stacked bar chart</strong>. The <strong>X-axis shows the 2 performance ratings</strong>. The <strong>Y-axis counts total employees</strong>. Each bar is split: <strong>red = left</strong>, <strong>green = stayed</strong>. Compare the <em>proportion</em> of red in each bar — if equal, performance rating doesn't predict attrition. Read alongside the Distribution chart (previous) to understand the population sizes.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Rating 3: <span class="tag-warn">200 left</span> (16.1% of 1,244) — proportionally similar</li>
+              <li>Rating 4: <span class="tag-warn">37 left</span> (16.4% of 226) — virtually the same rate</li>
+              <li><strong>Attrition rates are identical</strong> regardless of rating</li>
+              <li>Even "Outstanding" performers leave at the same rate — a critical warning</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('salary',null)">→ Salary section explains why: high performers also earn less than market — performance isn't being rewarded with pay</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>High performers leaving at the same rate as average performers is a serious signal: IBM is losing its best talent without differentiated retention offers. Outstanding employees expect <strong>faster promotion, higher pay, and visible recognition</strong>. A dedicated Top Talent Retention Program separate from general HR programs is essential.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Training Sessions vs Avg Job Satisfaction</div><div class="chart-subtitle">X-Axis: Number of Training Sessions (0–6 times/year) &nbsp;|&nbsp; Y-Axis: Average Job Satisfaction Score (1–4 scale)</div></div>
+        <span class="chart-tag tag-blue">TRAINING</span>
+      </div>
+      <div class="chart-wrap short"><canvas id="trainSatLine"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>bar chart</strong>. The <strong>X-axis shows how many training sessions</strong> employees attended in the last year (0 to 6 times). The <strong>Y-axis shows the average Job Satisfaction score</strong> (on a 1–4 scale) for employees in each training frequency group. Compare bar heights to see if more training correlates with higher satisfaction.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>0 training sessions: <strong>2.96 avg satisfaction</strong> — counterintuitively, highest</li>
+              <li>Satisfaction fluctuates between <strong>2.64–2.96</strong> across all groups</li>
+              <li><strong>No upward trend</strong> — more training ≠ more satisfaction</li>
+              <li>3 training sessions has the <strong>lowest satisfaction (2.64)</strong></li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('performance',null)">→ Compare with Training vs Performance chart below: training also fails to improve performance</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Training volume alone does not buy satisfaction. Employees may view mandatory training as <em>time away from meaningful work</em>. Shift from quantity-based to quality-based training — personalised, role-relevant programs with clear career outcomes. Measure whether training content aligns with employees' actual career goals.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Training Sessions vs Avg Performance Rating</div><div class="chart-subtitle">X-Axis: Number of Training Sessions per Year (0–6) &nbsp;|&nbsp; Y-Axis: Average Performance Rating (3.0–3.3 scale)</div></div>
+        <span class="chart-tag tag-green">TREND</span>
+      </div>
+      <div class="chart-wrap"><canvas id="trainPerfLine"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>line chart</strong>. The <strong>X-axis shows training frequency</strong> (0 to 6 sessions per year). The <strong>Y-axis shows the average performance rating</strong> for employees in each training group (scale compressed to 3.0–3.3 to show variation). A flat line = training has no effect on performance.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Performance stays <strong>flat at ~3.13–3.19</strong> regardless of training frequency</li>
+              <li>0 training sessions shows the <strong>highest average (3.19)</strong> — no benefit from training</li>
+              <li>The line is essentially <strong>horizontal — zero training ROI on performance</strong></li>
+              <li>Training frequency has one of the <strong>weakest correlations with attrition</strong> (r=−0.06)</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('performance',null)">→ Also see Training vs Satisfaction chart: satisfaction also doesn't improve with more training</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>This is a wake-up call for IBM's L&D function: sending employees to more training sessions is <strong>not improving performance outcomes</strong>. A full L&D audit is recommended — assessing training content quality, delivery method, alignment with job roles, and measurable post-training skill application. Volume-based training quotas should be eliminated.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Average Job Satisfaction Score by Job Role</div><div class="chart-subtitle">Y-Axis: Job Role &nbsp;|&nbsp; X-Axis: Average Job Satisfaction Score (1–4 scale) — sorted highest to lowest</div></div>
+        <span class="chart-tag tag-blue">ROLE SAT</span>
+      </div>
+      <div class="chart-wrap"><canvas id="roleSatBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from most to least satisfied. The <strong>X-axis shows the average Job Satisfaction score</strong> on a 1–4 scale (1=Low, 4=High). Longer bars = more satisfied roles. <span class="tag-good">Green bars</span> score ≥ 2.75; <span class="tag-warn">yellow bars</span> score below 2.75.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Healthcare Representatives: <span class="tag-good">2.79</span> — most satisfied role</li>
+              <li>Research Scientists: <span class="tag-good">2.77</span> — second highest</li>
+              <li>Human Resources: <span class="tag-warn">2.56</span> — lowest satisfaction (ironic for the "people team")</li>
+              <li>All roles cluster tightly between <strong>2.56–2.79</strong> — a universal problem</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ Cross-ref Attrition by Role: HR (2.56 satisfaction, 23.1% attrition) and Lab Tech (2.69, 23.9%) confirm low satisfaction → higher attrition</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The tight clustering near 2.7 across all roles means IBM has a <strong>company-wide satisfaction problem</strong> — not an isolated one. No single role is thriving. The fact that HR — the function responsible for employee wellbeing — scores lowest is particularly concerning. IBM needs a systemic cultural improvement initiative, not role-specific patches.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ EXPERIENCE ══════════════════════ -->
+<section class="section" id="experience">
+  <div class="section-title">Experience & Tenure Analysis</div>
+  <div class="section-desc">When employees leave — critical exit periods, manager relationships, and department satisfaction patterns</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent2)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">Tenure is a powerful predictor of retention — but the relationship is non-linear. The <strong>first year is the riskiest</strong> with 34.9% attrition, followed by a "2-year itch" at 18.4%. Employees stabilise by year 4+. Manager continuity is equally decisive: employees with <strong>0–1 years with their manager</strong> leave at 28.3%, dropping to 4.1% after 11+ years together. These charts should be cross-read with the Overview's Age Distribution — the young workforce translates into short tenure, compounding the year-0 risk.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>Year 0–1: 34.9% attrition</strong> — the single most critical exit window</li>
+        <li>Manager tenure 11+: only <strong>4.1% attrition</strong> — relationship = retention</li>
+        <li>R&D employees show <strong>higher satisfaction concentration</strong> than Sales in heatmap</li>
+        <li>Relationship satisfaction Rating 1 (low): <strong>20.7% attrition</strong> — highest risk group</li>
+        <li>Even after 11+ years, <strong>8.1% still leave</strong> — loyalty must be earned continuously</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Years with Current Manager vs Attrition Rate (%)</div><div class="chart-subtitle">X-Axis: Years with Manager (tenure bands) &nbsp;|&nbsp; Y-Axis: Attrition Rate (% who left in each band)</div></div>
+        <span class="chart-tag tag-red">MGMT</span>
+      </div>
+      <div class="chart-wrap"><canvas id="mgrAttrLine"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>line chart</strong>. The <strong>X-axis shows 5 tenure bands</strong> with the current manager: 0–1 years, 2–3, 4–6, 7–10, and 11+ years. The <strong>Y-axis shows the attrition rate (%)</strong> for employees in each group. A downward-trending line = longer manager relationships → lower attrition. A rise at any point signals a loyalty plateau.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>0–1 years with manager: <span class="tag-danger">28.3% attrition</span> — highest risk</li>
+              <li>2–3 years: drops sharply to <strong>14.2%</strong> — relationship building pays off</li>
+              <li>7–10 years: slight rise to <strong>12.1%</strong> — mid-career restlessness</li>
+              <li>11+ years: <span class="tag-good">4.1% attrition</span> — near-zero departure risk</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('experience',null)">→ Compare with Years at Company chart below — both show the "Year 0–1" danger zone</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Every new manager reassignment resets the clock back to 28.3% attrition risk. Minimising unnecessary manager changes and investing in structured 90-day manager-employee onboarding protocols during the first year of a relationship would have immediate attrition reduction impact.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Relationship Satisfaction vs Attrition Rate (%)</div><div class="chart-subtitle">X-Axis: Relationship Satisfaction Rating (1=Low → 4=Very High) &nbsp;|&nbsp; Y-Axis: Attrition Rate (%) at each level</div></div>
+        <span class="chart-tag tag-yellow">REL SAT</span>
+      </div>
+      <div class="chart-wrap"><canvas id="relSatAttr"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>vertical bar chart</strong>. The <strong>X-axis shows 4 Relationship Satisfaction levels</strong> (1=Low, 2=Medium, 3=High, 4=Very High). The <strong>Y-axis shows attrition rate (%)</strong> for employees at each level. <span class="tag-danger">Red bars</span> indicate above 20% risk; blue bars show moderate risk. A declining trend from left to right would indicate better relationships = lower attrition.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>Rating 1 (Low): <span class="tag-danger">20.7%</span> attrition — highest risk group</li>
+              <li>Rating 2 (Medium): <strong>14.8%</strong> — drops significantly</li>
+              <li>Rating 3 (High): <strong>15.5%</strong> — slight uptick (non-linear pattern)</li>
+              <li>Rating 4 (Very High): <strong>14.8%</strong> — best outcome, still not ideal</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('experience',null)">→ Cross with Manager Tenure chart: longer manager tenure improves both relationship satisfaction AND attrition rate together</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Low relationship satisfaction (Rating 1) adds ~6 percentage points of attrition risk. Team-building programs, conflict resolution training, and manager coaching for empathy and communication would help move employees from Rating 1–2 to Rating 3–4, delivering a measurable attrition reduction.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Years at Company vs Attrition Count</div><div class="chart-subtitle">X-Axis: Tenure Band (years at IBM) &nbsp;|&nbsp; Y-Axis: Number of Employees — grouped Left vs Stayed</div></div>
+        <span class="chart-tag tag-red">TENURE</span>
+      </div>
+      <div class="chart-wrap"><canvas id="yacAttrBar"></canvas></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>grouped bar chart</strong>. The <strong>X-axis shows 5 tenure bands</strong> (0–1, 2–3, 4–5, 6–10, 11+ years at IBM). For each band, two bars appear side by side: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. The <strong>Y-axis counts employees</strong>. A large red bar relative to green = high attrition in that tenure window.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>0–1 years: <span class="tag-danger">75 left</span> vs only 140 stayed = <strong>34.9% attrition rate</strong></li>
+              <li>2–3 years: <span class="tag-warn">47 left</span> = <strong>18.4%</strong> — "2-year itch" effect</li>
+              <li>4–5 years: attrition drops to <strong>13.1%</strong> — stabilisation</li>
+              <li>11+ years: only <span class="tag-good">20 left</span> = <strong>8.1%</strong> — most loyal cohort</li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('overview',null)">→ Overview Age Distribution shows a young workforce — many employees are in the 0–3 year tenure window, making this the highest-volume attrition zone</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>Year 0–1 is where IBM loses the most value per departure — the company has just invested in recruiting and onboarding with minimal return. A structured 90-day program, clear 6–12 month goal-setting, buddy systems, and <em>stay interviews</em> (not just exit interviews) at the 6-month mark would directly address this peak-risk window.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div><div class="chart-title">Department × Job Satisfaction Heatmap</div><div class="chart-subtitle">Row (Y): Department &nbsp;|&nbsp; Column (X): Job Satisfaction Rating (1=Low → 4=High) &nbsp;|&nbsp; Cell = Employee Count &nbsp;|&nbsp; Darker = more employees</div></div>
+        <span class="chart-tag tag-blue">HEATMAP</span>
+      </div>
+      <div class="heatmap-wrap" id="deptSatHeatmap" style="padding-top:16px"></div>
+      <div class="chart-explanation">
+        <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+        <div class="exp-body"><div class="exp-row">
+          <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+            <p>A <strong>heatmap table</strong>. Each <strong>row is a department</strong> (Sales, R&D, HR). Each <strong>column is a Job Satisfaction rating</strong> (1=Low to 4=High). The <strong>number in each cell = how many employees</strong> in that department have that satisfaction level. <strong>Darker blue cells = more employees</strong> at that combination. Read across a row to see a department's satisfaction distribution.</p>
+          </div>
+          <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+            <ul>
+              <li>R&D: largest cluster at <strong>Satisfaction 3 (300 employees)</strong> — mostly content</li>
+              <li>Sales: <strong>relatively spread across all levels</strong> — significant dissatisfied group (86 at Level 1)</li>
+              <li>HR: small dept, but <strong>proportionally large low-satisfaction group</strong> at Level 1</li>
+              <li>No department concentrates at <strong>Level 4 (highest satisfaction)</strong></li>
+            </ul>
+            <span class="cross-ref" onclick="showSection('attrition',null)">→ Sales has both high low-satisfaction (86 at Level 1) AND the highest attrition rate (20.6%) — satisfaction and attrition move together</span>
+          </div>
+          <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+            <p>The 86 Sales employees at Satisfaction Level 1 represent the <strong>next wave of attrition risk</strong>. Given Sales already has the highest attrition rate (20.6%), these 86 employees should be priority targets for engagement: stay interviews, compensation reviews, and role-enrichment discussions before they make the decision to leave.</p>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ CORRELATION ══════════════════════ -->
+<section class="section" id="correlation">
+  <div class="section-title">Correlation with Attrition</div>
+  <div class="section-desc">Statistical strength of each workforce variable's relationship with employee attrition — ranked by impact</div>
+
+  <div class="section-summary" style="border-left-color:var(--accent3)">
+    <div class="ss-left">
+      <div class="ss-label">🧠 Section Summary</div>
+      <div class="ss-text">This section quantifies <em>how strongly</em> each measurable factor is associated with attrition. A positive correlation means the factor <strong>increases attrition risk</strong>; negative means it <strong>reduces risk</strong>. OverTime (+0.25) is far and away the strongest predictor — confirming the Work-Life section's findings. Seniority variables (TotalWorkingYears, JobLevel, YearsWithCurrManager) all strongly reduce attrition, confirming the Experience section's tenure-loyalty relationship. This chart serves as the statistical backbone for all recommendations.</div>
+    </div>
+    <div class="ss-right">
+      <div class="ss-takeaways-label">💡 Key Takeaways</div>
+      <ul class="ss-takeaways">
+        <li><strong>OverTime (r=+0.25)</strong> — #1 predictor, confirms Work-Life section findings</li>
+        <li><strong>TotalWorkingYears (r=−0.17)</strong> — more experience = more loyalty</li>
+        <li><strong>MonthlyIncome (r=−0.16)</strong> — higher pay = lower attrition, confirms Salary section</li>
+        <li><strong>StockOptionLevel (r=−0.14)</strong> — equity ownership aligns employees with company</li>
+        <li><strong>DistanceFromHome (r=+0.08)</strong> — longer commute adds departure risk</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div><div class="chart-title">Feature Correlation with Attrition — Ranked by Strength</div><div class="chart-subtitle">Left label = Variable name &nbsp;|&nbsp; Bar length = Correlation strength &nbsp;|&nbsp; Red = increases attrition &nbsp;|&nbsp; Green = decreases attrition &nbsp;|&nbsp; Number = correlation coefficient (−1 to +1)</div></div>
+      <span class="chart-tag tag-red">TOP 15</span>
+    </div>
+    <div id="corrBars" style="padding:16px 0;"></div>
+    <div class="chart-explanation">
+      <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
+      <div class="exp-body"><div class="exp-row">
+        <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
+          <p>A <strong>horizontal ranked bar chart</strong>. The <strong>left labels name each workforce variable</strong>. The <strong>bar length shows correlation strength</strong> (longer = stronger relationship with attrition). <strong>Red bars = the variable increases attrition risk</strong>; <strong>green bars = the variable reduces attrition risk</strong>. The number at the end = the exact correlation coefficient (range: −1 to +1). Values near ±1 are very strong; values near 0 are weak.</p>
+        </div>
+        <div class="exp-col find"><div class="exp-col-label find">🔍 Key Findings</div>
+          <ul>
+            <li><span class="tag-danger">OverTime: +0.25</span> — strongest predictor, increases attrition</li>
+            <li><span class="tag-good">TotalWorkingYears: −0.17</span> — more experience = more loyal</li>
+            <li><span class="tag-good">MonthlyIncome: −0.16</span> — higher pay = lower risk</li>
+            <li><span class="tag-good">StockOptionLevel: −0.14</span> — equity creates retention</li>
+            <li>TrainingTimesLastYear: <strong>−0.06</strong> — almost zero effect, confirming Performance section</li>
+          </ul>
+          <span class="cross-ref" onclick="showSection('worklife',null)">→ Work-Life section shows OverTime data; Salary section shows Income data — all findings align</span>
+        </div>
+        <div class="exp-col biz"><div class="exp-col-label biz">💡 Business Meaning</div>
+          <p>This chart provides a <strong>data-driven priority ranking for HR interventions</strong>: (1) Eliminate overtime, (2) Raise base salaries, (3) Offer stock options to junior staff, (4) Build internal promotion paths to increase seniority. DistanceFromHome (+0.08) is also actionable: remote/hybrid work policies would reduce this risk factor.</p>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ INSIGHTS ══════════════════════ -->
+<section class="section" id="insights">
+  <div class="section-title">Key Insights</div>
+  <div class="section-desc">Evidence-based findings derived from all sections — prioritised by business impact</div>
+
+  <div class="insights-grid">
+    <div class="insight-card danger"><div class="insight-icon">🚨</div><div class="insight-title">Overtime is the #1 Attrition Driver</div><div class="insight-text">Employees working overtime show a <strong>30.5% attrition rate</strong> vs only 10.4% for non-OT employees — nearly 3× higher. Overtime has the strongest correlation (r=+0.25) with leaving. See: Work-Life section, Correlation section.</div></div>
+    <div class="insight-card danger"><div class="insight-icon">💸</div><div class="insight-title">Departing Employees Earn 38% Less</div><div class="insight-text">Median income for leavers was <strong>$3,202/mo</strong> vs <strong>$5,204/mo</strong> for stayers. Salary hike % is identical for both groups — the fix is <em>base pay reform</em>, not bigger raises. See: Salary section.</div></div>
+    <div class="insight-card danger"><div class="insight-icon">👶</div><div class="insight-title">Early Career Employees at Critical Risk</div><div class="insight-text">Age 18–24 has a <strong>39.2% attrition rate</strong>. The 25–34 group accounts for 112 departures — 47% of all attrition. See: Attrition by Age Group, Years at Company (year 0–1 = 34.9%).</div></div>
+    <div class="insight-card warn"><div class="insight-icon">📋</div><div class="insight-title">Sales Rep Role: 39.8% Attrition Rate</div><div class="insight-text">Sales Reps have the highest role attrition AND the lowest pay ($2,626/mo). The pay-attrition link is direct and causal. See: Attrition by Job Role, Average Income by Role (Salary section).</div></div>
+    <div class="insight-card warn"><div class="insight-icon">🏢</div><div class="insight-title">First Year at Company is Critical</div><div class="insight-text">Employees with <strong>0–1 years</strong> have a <strong>34.9% attrition rate</strong> — the highest tenure band. IBM is losing its onboarding investment before receiving any return. See: Years at Company chart.</div></div>
+    <div class="insight-card warn"><div class="insight-icon">👔</div><div class="insight-title">New Manager Relationships Are Risky</div><div class="insight-text">Employees with <strong>0–1 years with their current manager</strong> have a 28.3% attrition rate, dropping to 4.1% after 11+ years. Manager continuity is a powerful retention lever. See: Experience section.</div></div>
+    <div class="insight-card good"><div class="insight-icon">📈</div><div class="insight-title">Long-tenured Staff Are Highly Loyal</div><div class="insight-text">Employees with <strong>11+ years</strong> show only 8.1% attrition. Loyalty compounds over time — the challenge is getting employees past the year 0–3 danger zone. See: Years at Company chart.</div></div>
+    <div class="insight-card info"><div class="insight-icon">🎓</div><div class="insight-title">Training Has Minimal Impact on Performance or Satisfaction</div><div class="insight-text">Performance ratings remain flat at ~3.15 and satisfaction fluctuates without trend across all training frequencies. Volume-based training is not the answer. See: Performance section, Correlations (r=−0.06).</div></div>
+    <div class="insight-card good"><div class="insight-icon">🔬</div><div class="insight-title">R&D Retains Better Than Sales</div><div class="insight-text">R&D has a <strong>13.8% attrition rate</strong> vs Sales at <strong>20.6%</strong>. R&D's structured career paths and higher pay (avg $7K+) drive higher loyalty. Apply R&D's environment lessons to Sales. See: Attrition by Dept, Salary section.</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════ RECOMMENDATIONS ══════════════════════ -->
+<section class="section" id="recommendations">
+  <div class="section-title">Business Recommendations</div>
+  <div class="section-desc">Data-driven actions to reduce attrition, improve engagement, and optimise workforce efficiency</div>
+
+  <div class="rec-grid">
+    <div class="rec-card"><div class="rec-num" style="background:rgba(255,77,77,.15);color:var(--accent)">01</div><div class="rec-title">⏰ Eliminate Excessive Overtime</div><div class="rec-text">OT workers leave at 30.5% — nearly 3× non-OT. Implement mandatory overtime caps, hire additional headcount, and introduce flex-time. The Correlations section confirms OT is the #1 predictor (r=+0.25).</div><div class="rec-impact" style="background:rgba(255,77,77,.1);color:var(--accent)">🎯 Estimated Impact: −8% overall attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(0,229,160,.15);color:var(--accent2)">02</div><div class="rec-title">💰 Reform Base Pay for Junior Roles</div><div class="rec-text">Sales Reps ($2,626/mo) and Lab Technicians ($3,237/mo) are the lowest-paid and highest-attrition roles. The Salary Hike chart shows raises don't help — only structural base pay reform will.</div><div class="rec-impact" style="background:rgba(0,229,160,.1);color:var(--accent2)">🎯 Estimated Impact: −6% Sales attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(77,159,255,.15);color:var(--accent3)">03</div><div class="rec-title">🚀 Redesign Year-1 Onboarding</div><div class="rec-text">34.9% of year-0–1 employees leave. Build a 90-day structured onboarding with buddy systems, clear career paths, and 6-month stay interviews. This is the highest-ROI intervention by tenure band.</div><div class="rec-impact" style="background:rgba(77,159,255,.1);color:var(--accent3)">🎯 Estimated Impact: −10% year-1 attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(255,184,77,.15);color:var(--accent4)">04</div><div class="rec-title">👥 Stabilise Manager Assignments</div><div class="rec-text">New manager relationships spike attrition to 28.3%. Minimise reassignments, launch 360° feedback programs, and mandate structured manager-employee check-ins in the first year of every new pairing.</div><div class="rec-impact" style="background:rgba(255,184,77,.1);color:var(--accent4)">🎯 Estimated Impact: −5% management-driven attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(255,77,77,.15);color:var(--accent)">05</div><div class="rec-title">🎯 Launch Early-Career Retention Programs</div><div class="rec-text">Ages 18–34 account for 63% of departures. Create accelerated career ladders, mentorship programs, competitive equity packages, and learning budgets specifically for this demographic.</div><div class="rec-impact" style="background:rgba(255,77,77,.1);color:var(--accent)">🎯 Estimated Impact: −12% under-35 attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(0,229,160,.15);color:var(--accent2)">06</div><div class="rec-title">📊 Restructure Sales Department</div><div class="rec-text">Sales Reps (39.8% attrition, $2,626/mo) need a comprehensive fix: competitive base pay, clear promotion paths, reduced pressure, and better WLB policies. Model improvements on R&D's retention success.</div><div class="rec-impact" style="background:rgba(0,229,160,.1);color:var(--accent2)">🎯 Estimated Impact: −15% Sales Rep attrition</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(77,159,255,.15);color:var(--accent3)">07</div><div class="rec-title">🎓 Audit & Redesign Training Programs</div><div class="rec-text">Training has near-zero impact on performance (flat at ~3.15) and satisfaction. Shift from mandatory volume-based sessions to personalised, role-relevant development paths with measurable career outcomes.</div><div class="rec-impact" style="background:rgba(77,159,255,.1);color:var(--accent3)">🎯 Estimated Impact: +0.3 avg performance score</div></div>
+    <div class="rec-card"><div class="rec-num" style="background:rgba(255,184,77,.15);color:var(--accent4)">08</div><div class="rec-title">📅 Offer Stock Options to Junior Staff</div><div class="rec-text">StockOptionLevel has a correlation of r=−0.14 with attrition (Correlations section) — equity aligns employee interests with the company. Extending stock option eligibility to Sales Reps and Lab Technicians would directly address the highest-attrition roles.</div><div class="rec-impact" style="background:rgba(255,184,77,.1);color:var(--accent4)">🎯 Estimated Impact: −4% junior role attrition</div></div>
+  </div>
+
+  <div class="overall-summary">
+    <div class="os-title">📊 Overall Insights & Recommendations Summary</div>
+    <div class="os-subtitle">Complete picture — top findings, root causes, and priority actions synthesised from all 7 analysis sections</div>
+    <div class="os-grid">
+      <div class="os-panel">
+        <div class="os-panel-title red">🔴 Top 5 Key Findings</div>
+        <ul class="os-list findings">
+          <li>IBM's attrition rate is <strong>16.1%</strong> — 4–6 percentage points above the healthy 10–12% benchmark (34–61% higher in relative terms)</li>
+          <li>Overtime workers leave at <strong>30.5%</strong> — nearly 3× the rate of non-OT employees (Work-Life section)</li>
+          <li>Employees who left earned a <strong>median of $3,202/mo vs $5,204 for stayers</strong> — a 38% income gap (Salary section)</li>
+          <li><strong>34.9% of new hires leave in year 1</strong> — IBM's onboarding is failing (Experience section)</li>
+          <li>Sales Representatives have a <strong>39.8% attrition rate AND the lowest pay</strong> — direct causal link (Attrition + Salary sections)</li>
+        </ul>
+      </div>
+      <div class="os-panel">
+        <div class="os-panel-title yellow">⚠️ Main Reasons for Attrition</div>
+        <ul class="os-list reasons">
+          <li><strong>Burnout from overtime</strong> — #1 statistical driver (r=+0.25, Correlations section)</li>
+          <li><strong>Low base compensation</strong> — especially Sales Reps and Lab Technicians (Salary section)</li>
+          <li><strong>Weak onboarding</strong> — new hires don't see a path forward (Experience section)</li>
+          <li><strong>Manager instability</strong> — new manager pairings spike risk to 28% (Experience section)</li>
+          <li><strong>No fast-track for young talent</strong> — 18–34 year olds have highest departure rates (Attrition section)</li>
+          <li><strong>Training that doesn't develop</strong> — no performance or satisfaction impact (Performance section)</li>
+        </ul>
+      </div>
+      <div class="os-panel">
+        <div class="os-panel-title green">✅ Priority Action Plan</div>
+        <ul class="os-list actions">
+          <li><strong>Eliminate overtime</strong> — hire to fill gaps, enable flex-time (highest ROI action)</li>
+          <li><strong>Raise base salaries</strong> for Sales Reps, Lab Technicians, and HR staff</li>
+          <li><strong>Redesign year-1 onboarding</strong> with 90-day program and stay interviews</li>
+          <li><strong>Stabilise manager assignments</strong> — avoid reshuffling, invest in manager coaching</li>
+          <li><strong>Launch early-career fast tracks</strong> — accelerated promotions for 18–34 age group</li>
+          <li><strong>Extend stock options</strong> to junior staff — proven retention lever (r=−0.14)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+Chart.defaults.color='#7a8499';
+Chart.defaults.font.family="'DM Sans',sans-serif";
+Chart.defaults.font.size=11;
+
+const RED='#ff4d4d',RED_T='rgba(255,77,77,0.7)';
+const GREEN='#00e5a0',GREEN_T='rgba(0,229,160,0.7)';
+const BLUE='#4d9fff',BLUE_T='rgba(77,159,255,0.7)';
+const YELLOW='#ffb84d',YELLOW_T='rgba(255,184,77,0.7)';
+const gc='rgba(255,255,255,0.04)';
+function go(){return{color:gc,drawBorder:false};}
+function to(){return{color:'#7a8499'};}
+function axTitle(text){return{display:true,text,color:'#9aafc4',font:{size:11,weight:'500'},padding:8};}
+
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  else if(window.event&&window.event.target)window.event.target.classList.add('active');
+}
+function toggleExp(btn){
+  btn.nextElementSibling.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+// ── DATA ──
+const deptData={Sales:{Yes:92,No:354},'Research & Development':{Yes:133,No:828},'Human Resources':{Yes:12,No:51}};
+const ageBinsRaw={'18-24':{Yes:38,No:59},'25-34':{Yes:112,No:442},'35-44':{Yes:51,No:454},'45-54':{Yes:25,No:220},'55+':{Yes:11,No:58}};
+const roleAttrRaw={'Sales Executive':{Yes:57,No:269},'Research Scientist':{Yes:47,No:245},'Laboratory Technician':{Yes:62,No:197},'Manufacturing Director':{Yes:10,No:135},'Healthcare Rep.':{Yes:9,No:122},'Manager':{Yes:5,No:97},'Sales Representative':{Yes:33,No:50},'Research Director':{Yes:2,No:78},'Human Resources':{Yes:12,No:40}};
+const otAttrRaw={'Overtime: Yes':{Yes:127,No:289},'Overtime: No':{Yes:110,No:944}};
+const eduAttrRaw={'Life Sciences':{Yes:89,No:517},'Medical':{Yes:63,No:401},'Marketing':{Yes:35,No:124},'Technical Degree':{Yes:32,No:100},'Human Resources':{Yes:7,No:20},'Other':{Yes:11,No:71}};
+const wlbAttrRaw={'1 — Bad':{Yes:25,No:55},'2 — Fair':{Yes:58,No:286},'3 — Good':{Yes:127,No:766},'4 — Excellent':{Yes:27,No:126}};
+const mgrAttrRaw={'0–1 yrs':{Yes:96,No:243},'2–3 yrs':{Yes:69,No:417},'4–6 yrs':{Yes:19,No:139},'7–10 yrs':{Yes:50,No:364},'11+ yrs':{Yes:3,No:70}};
+const relSatAttrRaw={'1 — Low':{Yes:57,No:219},'2 — Medium':{Yes:45,No:258},'3 — High':{Yes:71,No:388},'4 — Very High':{Yes:64,No:368}};
+const yacAttrRaw={'0–1 yrs':{Yes:75,No:140},'2–3 yrs':{Yes:47,No:208},'4–5 yrs':{Yes:40,No:266},'6–10 yrs':{Yes:55,No:393},'11+ yrs':{Yes:20,No:226}};
+const roleIncome={'Manager':17182,'Research Director':16034,'Healthcare Rep.':7529,'Manufacturing Director':7295,'Sales Executive':6924,'Human Resources':4236,'Research Scientist':3240,'Laboratory Technician':3237,'Sales Representative':2626};
+const roleSatRaw={'Sales Executive':2.75,'Research Scientist':2.77,'Laboratory Technician':2.69,'Manufacturing Director':2.68,'Healthcare Rep.':2.79,'Manager':2.71,'Sales Representative':2.73,'Research Director':2.70,'Human Resources':2.56};
+const trainPerfRaw={0:3.19,1:3.13,2:3.16,3:3.15,4:3.13,5:3.16,6:3.14};
+const trainSatRaw={0:2.96,1:2.66,2:2.76,3:2.64,4:2.85,5:2.68,6:2.88};
+const corrData=[['OverTime',0.2461],['TotalWorkingYears',-0.1711],['JobLevel',-0.1691],['YearsInCurrentRole',-0.1605],['MonthlyIncome',-0.1598],['Age',-0.1592],['YearsWithCurrManager',-0.1562],['StockOptionLevel',-0.1371],['YearsAtCompany',-0.1344],['JobInvolvement',-0.13],['JobSatisfaction',-0.1035],['EnvironmentSatisfaction',-0.1034],['DistanceFromHome',0.0779],['WorkLifeBalance',-0.0639],['TrainingTimesLastYear',-0.0595]];
+const ageHistRaw={15:17,20:80,25:229,30:325,35:297,40:208,45:141,50:104,55:64,60:5};
+const incHistRaw={0:33,2000:509,4000:372,6000:175,8000:100,10000:86,12000:53,14000:16,16000:57,18000:69};
+
+function attrRate(d){return Math.round(d.Yes/(d.Yes+d.No)*100);}
+
+// ── OVERVIEW ──
+new Chart(document.getElementById('attrDonut'),{type:'doughnut',data:{labels:['Left — 237 (16.1%)','Stayed — 1,233 (83.9%)'],datasets:[{data:[237,1233],backgroundColor:[RED,GREEN],borderWidth:0,hoverOffset:8}]},options:{plugins:{legend:{position:'bottom',labels:{padding:20,font:{size:12}}}},cutout:'68%'}});
+
+new Chart(document.getElementById('deptBar'),{type:'bar',data:{labels:['Research & Dev (R&D)','Sales','Human Resources'],datasets:[{label:'Number of Employees',data:[961,446,63],backgroundColor:[BLUE_T,YELLOW_T,GREEN_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Department')}}}});
+
+new Chart(document.getElementById('genderPie'),{type:'pie',data:{labels:['Male — 882 (60.4%)','Female — 588 (39.6%)'],datasets:[{data:[882,588],backgroundColor:[BLUE_T,'rgba(255,130,200,0.7)'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12}}}}}});
+
+new Chart(document.getElementById('ageHist'),{type:'bar',data:{labels:['15–19','20–24','25–29','30–34','35–39','40–44','45–49','50–54','55–59','60+'],datasets:[{label:'Number of Employees',data:Object.values(ageHistRaw),backgroundColor:BLUE_T,borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Age Group (5-year bands)')}}}});
+
+// ── ATTRITION ──
+new Chart(document.getElementById('deptAttrBar'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Left (Attrition = Yes)',data:[92,133,12],backgroundColor:RED_T,borderRadius:4},{label:'Stayed (Attrition = No)',data:[354,828,51],backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+new Chart(document.getElementById('deptAttrRate'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Attrition Rate (%)',data:[20.6,13.8,19.0],backgroundColor:[RED_T,GREEN_T,YELLOW_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each dept that left'),max:25},x:{grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')}}}});
+
+const rolesSorted=Object.entries(roleAttrRaw).map(([k,v])=>({name:k,rate:attrRate(v)})).sort((a,b)=>b.rate-a.rate);
+new Chart(document.getElementById('roleAttrBar'),{type:'bar',data:{labels:rolesSorted.map(r=>r.name),datasets:[{label:'Attrition Rate (%)',data:rolesSorted.map(r=>r.rate),backgroundColor:rolesSorted.map(r=>r.rate>25?RED_T:r.rate>15?YELLOW_T:GREEN_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each role that left'),max:45},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+
+const ageBinsOrdered=['18-24','25-34','35-44','45-54','55+'];
+new Chart(document.getElementById('ageAttrBar'),{type:'bar',data:{labels:ageBinsOrdered,datasets:[{label:'Left (Yes)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].Yes),backgroundColor:RED_T,borderRadius:4},{label:'Stayed (No)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].No),backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Age Group')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+new Chart(document.getElementById('genderAttrDonut'),{type:'doughnut',data:{labels:['Male Left — 150 (17%)','Male Stayed — 732','Female Left — 87 (14.8%)','Female Stayed — 501'],datasets:[{data:[150,732,87,501],backgroundColor:[RED_T,BLUE_T,'rgba(255,130,200,0.5)','rgba(255,130,200,0.2)'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:10}}}},cutout:'60%'}});
+
+const eduSorted=Object.entries(eduAttrRaw).map(([k,v])=>({name:k,rate:attrRate(v)})).sort((a,b)=>b.rate-a.rate);
+new Chart(document.getElementById('eduAttrBar'),{type:'bar',data:{labels:eduSorted.map(e=>e.name),datasets:[{label:'Attrition Rate (%)',data:eduSorted.map(e=>e.rate),backgroundColor:eduSorted.map(e=>e.rate>25?RED_T:e.rate>15?YELLOW_T:GREEN_T),borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%)')},x:{grid:{display:false},ticks:{...to(),maxRotation:20},title:axTitle('Education Field')}}}});
+
+// ── SALARY ──
+new Chart(document.getElementById('incomeHist'),{type:'bar',data:{labels:['$0–2K','$2K–4K','$4K–6K','$6K–8K','$8K–10K','$10K–12K','$12K–14K','$14K–16K','$16K–18K','$18K–20K'],datasets:[{label:'Number of Employees',data:Object.values(incHistRaw),backgroundColor:BLUE_T,borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:{...to(),maxRotation:30,font:{size:10}},title:axTitle('Monthly Income Range ($)')}}}});
+
+// Income comparison grouped bar (replaces box plot)
+new Chart(document.getElementById('incomeCompare'),{type:'bar',data:{labels:['Median Income','Mean (Avg) Income','Q1 — Bottom 25%','Q3 — Top 25%'],datasets:[{label:'Left (Attrition = Yes)',data:[3202,4787,2373,5916],backgroundColor:RED_T,borderRadius:5,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[5204,6832,3211,8834],backgroundColor:GREEN_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'K'},title:axTitle('Monthly Income ($)'),beginAtZero:true},x:{grid:{display:false},ticks:to(),title:axTitle('Income Statistic')}}}});
+
+// Hike comparison grouped bar (replaces box plot)
+new Chart(document.getElementById('hikeCompare'),{type:'bar',data:{labels:['Median Hike %','Q1 — Lower End','Q3 — Upper End'],datasets:[{label:'Left (Attrition = Yes)',data:[14,12,17],backgroundColor:RED_T,borderRadius:5,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[14,12,18],backgroundColor:GREEN_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Salary Hike Percentage (%)'),beginAtZero:false,min:8,max:22},x:{grid:{display:false},ticks:to(),title:axTitle('Hike Statistic')}}}});
+
+const roleSorted=Object.entries(roleIncome).sort((a,b)=>b[1]-a[1]);
+new Chart(document.getElementById('roleIncomeBar'),{type:'bar',data:{labels:roleSorted.map(r=>r[0]),datasets:[{label:'Average Monthly Income ($)',data:roleSorted.map(r=>r[1]),backgroundColor:roleSorted.map(r=>r[1]>10000?GREEN_T:r[1]>5000?BLUE_T:YELLOW_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'k'},title:axTitle('Average Monthly Income ($)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+
+// ── WORK-LIFE ──
+new Chart(document.getElementById('otAttrBar'),{type:'bar',data:{labels:['Overtime: Yes (416 employees)','Overtime: No (1,054 employees)'],datasets:[{label:'Left (Attrition = Yes)',data:[127,110],backgroundColor:RED_T,borderRadius:5},{label:'Stayed (Attrition = No)',data:[289,944],backgroundColor:GREEN_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Overtime Status')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+new Chart(document.getElementById('wlbAttrBar'),{type:'bar',data:{labels:Object.keys(wlbAttrRaw),datasets:[{label:'Left (Attrition = Yes)',data:Object.values(wlbAttrRaw).map(d=>d.Yes),backgroundColor:RED_T,borderRadius:5},{label:'Stayed (Attrition = No)',data:Object.values(wlbAttrRaw).map(d=>d.No),backgroundColor:GREEN_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Work-Life Balance Rating (1=Bad → 4=Excellent)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+function makeHeatmap(cid,rowLabels,colLabels,data,rTitle,cTitle){
+  const mx=Math.max(...data.flat());
+  let h=`<table class="heatmap-table"><thead><tr><th>${rTitle} → / ↓ ${cTitle}</th>`;
+  colLabels.forEach(c=>{h+=`<th>${c}</th>`;});
+  h+='</tr></thead><tbody>';
+  rowLabels.forEach((r,i)=>{
+    h+=`<tr><th style="text-align:right;padding-right:12px">${r}</th>`;
+    data[i].forEach(val=>{
+      const intensity=val/mx;
+      const bg=`rgba(77,159,255,${(intensity*.8+.08).toFixed(2)})`;
+      const tc=intensity>.5?'#fff':'#a0b0cc';
+      h+=`<td style="background:${bg};color:${tc}">${val}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById(cid).innerHTML=h;
+}
+
+makeHeatmap('jsWlbHeatmap',
+  ['JS 1 — Low Satisfaction','JS 2 — Below Average','JS 3 — Good','JS 4 — High Satisfaction'],
+  ['WLB 1 — Bad','WLB 2 — Fair','WLB 3 — Good','WLB 4 — Excellent'],
+  [[17,61,182,29],[18,58,175,29],[21,101,273,47],[24,124,263,48]],
+  'Job Satisfaction (row)','Work-Life Balance (column)');
+
+// ── PERFORMANCE ──
+new Chart(document.getElementById('perfDist'),{type:'bar',data:{labels:['Rating 3 — Excellent','Rating 4 — Outstanding'],datasets:[{label:'Number of Employees',data:[1244,226],backgroundColor:[GREEN_T,BLUE_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Performance Rating')}}}});
+
+new Chart(document.getElementById('perfAttrBar'),{type:'bar',data:{labels:['Rating 3 — Excellent (1,244 total)','Rating 4 — Outstanding (226 total)'],datasets:[{label:'Left (Yes)',data:[200,37],backgroundColor:RED_T,borderRadius:4},{label:'Stayed (No)',data:[1044,189],backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Performance Rating')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+new Chart(document.getElementById('trainPerfLine'),{type:'line',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Performance Rating',data:Object.values(trainPerfRaw),borderColor:GREEN,backgroundColor:'rgba(0,229,160,0.1)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:GREEN}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:to(),min:3.0,max:3.3,title:axTitle('Average Performance Rating (3.0–4.0 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
+
+new Chart(document.getElementById('trainSatLine'),{type:'bar',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Job Satisfaction Score',data:Object.values(trainSatRaw),backgroundColor:BLUE_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{grid:go(),ticks:to(),min:2.4,max:3.2,title:axTitle('Average Job Satisfaction (1–4 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
+
+const roleSatSorted=Object.entries(roleSatRaw).sort((a,b)=>b[1]-a[1]);
+new Chart(document.getElementById('roleSatBar'),{type:'bar',data:{labels:roleSatSorted.map(r=>r[0]),datasets:[{label:'Avg Job Satisfaction (1–4)',data:roleSatSorted.map(r=>r[1]),backgroundColor:roleSatSorted.map(r=>r[1]>=2.75?GREEN_T:YELLOW_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:to(),min:2.4,max:3.0,title:axTitle('Average Job Satisfaction Score (1=Low → 4=High)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+
+// ── EXPERIENCE ──
+const mgrOrder=['0–1 yrs','2–3 yrs','4–6 yrs','7–10 yrs','11+ yrs'];
+new Chart(document.getElementById('mgrAttrLine'),{type:'line',data:{labels:mgrOrder,datasets:[{label:'Attrition Rate (%)',data:mgrOrder.map(k=>attrRate(mgrAttrRaw[k])),borderColor:RED,backgroundColor:'rgba(255,77,77,0.1)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:RED}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Years with Current Manager')}}}});
+
+new Chart(document.getElementById('relSatAttr'),{type:'bar',data:{labels:Object.keys(relSatAttrRaw),datasets:[{label:'Attrition Rate (%)',data:Object.values(relSatAttrRaw).map(attrRate),backgroundColor:Object.values(relSatAttrRaw).map(d=>attrRate(d)>20?RED_T:BLUE_T),borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Relationship Satisfaction Rating (1=Low → 4=Very High)')}}}});
+
+const yacOrder=['0–1 yrs','2–3 yrs','4–5 yrs','6–10 yrs','11+ yrs'];
+new Chart(document.getElementById('yacAttrBar'),{type:'bar',data:{labels:yacOrder,datasets:[{label:'Left (Attrition = Yes)',data:yacOrder.map(k=>yacAttrRaw[k].Yes),backgroundColor:RED_T,borderRadius:4},{label:'Stayed (Attrition = No)',data:yacOrder.map(k=>yacAttrRaw[k].No),backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Years at Company (Tenure Band)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+
+makeHeatmap('deptSatHeatmap',
+  ['Sales','Research & Development (R&D)','Human Resources (HR)'],
+  ['Sat 1 — Low','Sat 2 — Below Avg','Sat 3 — Good','Sat 4 — High'],
+  [[86,86,127,147],[192,174,300,295],[11,20,15,17]],
+  'Department (row)','Job Satisfaction Level (column)');
+
+// ── CORRELATION ──
+const corrContainer=document.getElementById('corrBars');
+const maxCorr=Math.max(...corrData.map(d=>Math.abs(d[1])));
+let corrHtml='<div class="corr-grid">';
+corrData.forEach(([name,val])=>{
+  const pct=Math.abs(val)/maxCorr*100;
+  const color=val>0?RED:GREEN;
+  const colorT=val>0?'rgba(255,77,77,0.7)':'rgba(0,229,160,0.7)';
+  const dir=val>0?'↑ increases attrition':'↓ decreases attrition';
+  corrHtml+=`<div class="corr-row">
+    <div class="corr-label">${name}</div>
+    <div class="corr-bar-wrap"><div class="corr-bar" style="width:${pct}%;background:${colorT}"><span class="corr-val" style="color:${color}">${val>0?'+':''}${val}</span></div></div>
+    <span style="font-size:10px;color:${color};width:160px;flex-shrink:0;margin-left:8px">${dir}</span>
+  </div>`;
+});
+corrHtml+='</div>';
+corrContainer.innerHTML=corrHtml;
+</script>
+</body>
+</html>
