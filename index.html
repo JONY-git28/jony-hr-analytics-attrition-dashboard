@@ -31,12 +31,77 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-live{background:rgba(0,229,160,.15);color:var(--accent2);border:1px solid rgba(0,229,160,.3);}
 .badge-emp{background:rgba(77,159,255,.15);color:var(--accent3);border:1px solid rgba(77,159,255,.3);}
 
-/* NAV */
-.nav-tabs{display:flex;gap:4px;padding:16px 40px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+/* NAV — always glowing, distinct active state */
+.nav-tabs{
+  display:flex;gap:8px;padding:14px 40px;
+  background:linear-gradient(180deg,#0e1320 0%,var(--surface) 100%);
+  border-bottom:1px solid rgba(77,159,255,0.15);
+  overflow-x:auto;scrollbar-width:none;
+}
 .nav-tabs::-webkit-scrollbar{display:none;}
-.tab-btn{padding:8px 20px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;white-space:nowrap;transition:all .2s;}
-.tab-btn:hover{background:rgba(255,255,255,.05);color:var(--text);}
-.tab-btn.active{background:rgba(255,77,77,.15);color:var(--accent);border:1px solid rgba(255,77,77,.3);}
+
+.tab-btn{
+  position:relative;
+  padding:9px 18px;border-radius:8px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
+  color:#c0cfe8;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  white-space:nowrap;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 0 8px rgba(77,159,255,0.08), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  overflow:hidden;
+  letter-spacing:0.2px;
+}
+/* shimmer line at top of every button */
+.tab-btn::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  border-radius:1px;
+}
+/* subtle shine sweep on hover */
+.tab-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.08) 50%,transparent 60%);
+  transform:translateX(-100%);
+  transition:transform 0.4s ease;
+  border-radius:8px;
+}
+.tab-btn:hover{
+  color:#fff;
+  border-color:rgba(77,159,255,0.45);
+  background:linear-gradient(135deg,rgba(77,159,255,0.18) 0%,rgba(77,159,255,0.08) 100%);
+  box-shadow:0 0 16px rgba(77,159,255,0.3), 0 0 32px rgba(77,159,255,0.1), 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
+  transform:translateY(-2px);
+}
+.tab-btn:hover::after{transform:translateX(100%);}
+.tab-btn:active{transform:translateY(0) scale(0.97);}
+
+/* CLICKED / ACTIVE STATE — green-gold burst, completely different from hover */
+.tab-btn.active{
+  background:linear-gradient(135deg,rgba(0,229,160,0.22) 0%,rgba(0,180,120,0.1) 100%);
+  color:var(--accent2);
+  border-color:rgba(0,229,160,0.55);
+  box-shadow:
+    0 0 18px rgba(0,229,160,0.5),
+    0 0 36px rgba(0,229,160,0.2),
+    0 0 60px rgba(0,229,160,0.08),
+    inset 0 0 16px rgba(0,229,160,0.08),
+    inset 0 1px 0 rgba(0,229,160,0.3);
+  transform:translateY(-1px);
+  animation:activeTabGlow 2.2s ease-in-out infinite;
+}
+.tab-btn.active::before{
+  background:linear-gradient(90deg,transparent,rgba(0,229,160,0.6),transparent);
+}
+@keyframes activeTabGlow{
+  0%,100%{
+    box-shadow:0 0 18px rgba(0,229,160,0.5),0 0 36px rgba(0,229,160,0.2),0 0 60px rgba(0,229,160,0.08),inset 0 0 16px rgba(0,229,160,0.08),inset 0 1px 0 rgba(0,229,160,0.3);
+  }
+  50%{
+    box-shadow:0 0 26px rgba(0,229,160,0.75),0 0 52px rgba(0,229,160,0.35),0 0 80px rgba(0,229,160,0.15),inset 0 0 22px rgba(0,229,160,0.14),inset 0 1px 0 rgba(0,229,160,0.5);
+  }
+}
 
 /* MAIN */
 .main{padding:32px 40px;max-width:1600px;margin:0 auto;}
@@ -96,14 +161,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .chart-wrap.tall canvas{max-height:360px;}
 .chart-wrap.short canvas{max-height:200px;}
 
-/* EXPLANATION PANEL */
+/* EXPLANATION PANEL — always open */
 .chart-explanation{margin-top:18px;padding-top:16px;border-top:1px solid var(--exp-border);}
-.exp-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:12px;font-weight:600;color:var(--accent3);background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;transition:color .2s;}
-.exp-toggle:hover{color:var(--text);}
-.exp-toggle .arrow{width:16px;height:16px;border-radius:50%;background:rgba(77,159,255,.15);display:inline-flex;align-items:center;justify-content:center;font-size:9px;transition:transform .25s;}
-.exp-toggle.open .arrow{transform:rotate(180deg);}
-.exp-body{display:none;margin-top:14px;background:var(--exp-bg);border:1px solid var(--exp-border);border-radius:10px;overflow:hidden;animation:expFade .25s ease;}
-.exp-body.open{display:block;}
+.exp-toggle{display:none;}
+.exp-body{display:block;margin-top:0;background:var(--exp-bg);border:1px solid var(--exp-border);border-radius:10px;overflow:hidden;}
 @keyframes expFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .exp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
 @media(max-width:900px){.exp-row{grid-template-columns:1fr;}}
@@ -190,6 +251,153 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+/* SECTION NAVIGATION BAR — always glowing, distinct click effect */
+.section-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:linear-gradient(180deg,rgba(8,11,18,0.96) 0%,rgba(5,8,14,0.99) 100%);
+  border-top:1px solid rgba(77,159,255,0.15);
+  backdrop-filter:blur(28px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 40px;gap:16px;
+  box-shadow:0 -6px 40px rgba(0,0,0,0.7), 0 -1px 0 rgba(77,159,255,0.08);
+}
+/* animated rainbow border flow — always on */
+.section-nav::before{
+  content:'';position:absolute;top:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,
+    rgba(77,159,255,0) 0%,
+    rgba(77,159,255,0.8) 20%,
+    rgba(0,229,160,0.8) 45%,
+    rgba(255,184,77,0.7) 65%,
+    rgba(255,77,77,0.6) 80%,
+    rgba(77,159,255,0) 100%
+  );
+  background-size:200% 100%;
+  animation:navFlow 3.5s linear infinite;
+}
+@keyframes navFlow{from{background-position:100% 0;}to{background-position:-100% 0;}}
+
+/* Prev / Next — always glowing by default */
+.snav-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 22px;border-radius:10px;
+  border:1px solid rgba(77,159,255,0.3);
+  background:linear-gradient(135deg,rgba(77,159,255,0.14) 0%,rgba(77,159,255,0.05) 100%);
+  color:var(--accent3);
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+  white-space:nowrap;letter-spacing:0.3px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  /* DEFAULT glow — always visible */
+  box-shadow:
+    0 0 12px rgba(77,159,255,0.25),
+    0 0 24px rgba(77,159,255,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 2px 8px rgba(0,0,0,0.4);
+  position:relative;overflow:hidden;
+}
+/* shimmer top line always visible */
+.snav-btn::before{
+  content:'';position:absolute;top:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(77,159,255,0.6),transparent);
+}
+/* shine sweep on hover */
+.snav-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,0.1) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .4s ease;border-radius:10px;
+}
+.snav-btn:hover:not(:disabled){
+  transform:translateY(-3px);
+  border-color:rgba(77,159,255,0.7);
+  background:linear-gradient(135deg,rgba(77,159,255,0.28) 0%,rgba(0,229,160,0.14) 100%);
+  color:#fff;
+  box-shadow:
+    0 0 24px rgba(77,159,255,0.55),
+    0 0 48px rgba(77,159,255,0.25),
+    0 0 80px rgba(77,159,255,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 6px 20px rgba(0,0,0,0.5);
+}
+.snav-btn:hover:not(:disabled)::after{transform:translateX(120%);}
+
+/* CLICKED STATE — gold burst, completely different */
+.snav-btn:active:not(:disabled){
+  transform:translateY(0) scale(0.96);
+  background:linear-gradient(135deg,rgba(255,184,77,0.3) 0%,rgba(255,140,30,0.15) 100%);
+  border-color:rgba(255,184,77,0.7);
+  color:var(--accent4);
+  box-shadow:
+    0 0 20px rgba(255,184,77,0.6),
+    0 0 40px rgba(255,184,77,0.25),
+    inset 0 0 16px rgba(255,184,77,0.15);
+  transition:all .08s;
+}
+
+.snav-btn:disabled{
+  opacity:0.22;cursor:not-allowed;
+  background:rgba(255,255,255,0.02);
+  border-color:rgba(255,255,255,0.07);
+  color:var(--muted);
+  box-shadow:none;
+}
+.snav-btn:disabled::before,.snav-btn:disabled::after{display:none;}
+
+/* Centre */
+.snav-center{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+
+/* Progress dots — always glowing */
+.snav-dots{display:flex;gap:8px;align-items:center;}
+.snav-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(77,159,255,0.2);
+  border:1px solid rgba(77,159,255,0.35);
+  cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  /* DEFAULT glow on all dots */
+  box-shadow:0 0 5px rgba(77,159,255,0.25), 0 0 10px rgba(77,159,255,0.1);
+  position:relative;
+}
+.snav-dot:hover:not(.active){
+  background:rgba(77,159,255,0.55);
+  border-color:rgba(77,159,255,0.9);
+  transform:scale(1.45);
+  box-shadow:0 0 12px rgba(77,159,255,0.7), 0 0 24px rgba(77,159,255,0.35);
+}
+/* ACTIVE dot — green, pulsing, pill-shaped — totally different from default blue */
+.snav-dot.active{
+  background:linear-gradient(90deg,var(--accent2),rgba(0,200,140,0.8));
+  border-color:var(--accent2);
+  width:30px;border-radius:5px;
+  box-shadow:
+    0 0 14px rgba(0,229,160,0.8),
+    0 0 28px rgba(0,229,160,0.4),
+    0 0 50px rgba(0,229,160,0.15);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{
+  0%,100%{box-shadow:0 0 14px rgba(0,229,160,0.8),0 0 28px rgba(0,229,160,0.4),0 0 50px rgba(0,229,160,0.15);}
+  50%{box-shadow:0 0 22px rgba(0,229,160,1),0 0 44px rgba(0,229,160,0.65),0 0 70px rgba(0,229,160,0.25);}
+}
+
+/* Section label */
+.snav-label{
+  font-size:11px;color:rgba(160,180,210,0.8);letter-spacing:0.8px;
+  font-family:'DM Sans',sans-serif;font-weight:500;
+}
+.snav-progress{font-size:11px;color:var(--accent3);font-family:'JetBrains Mono',monospace;font-weight:600;}
+
+/* push content above nav bar */
+.main{padding-bottom:80px;}
+
+/* exp-body label strip */
+.exp-body-header{
+  padding:8px 18px;
+  background:rgba(77,159,255,0.06);
+  border-bottom:1px solid var(--exp-border);
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  font-weight:700;color:var(--accent3);
+  display:flex;align-items:center;gap:6px;
+}
 </style>
 </head>
 <body>
@@ -266,7 +474,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="attrDonut"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>donut chart</strong> dividing all 1,470 employees into two groups: those who left the company (<strong>Attrition = Yes</strong>) shown in red, and those who stayed (<strong>Attrition = No</strong>) shown in green. The size of each slice represents the proportion.</p>
           </div>
@@ -294,7 +502,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="deptBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists the 3 departments</strong> (Research & Development, Sales, Human Resources). The <strong>Y-axis shows the total number of employees</strong> in each department. Taller bars = more employees.</p>
           </div>
@@ -324,7 +532,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap short"><canvas id="genderPie"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>pie chart</strong> showing the male-to-female ratio across all 1,470 employees. Each slice represents one gender, sized by their share of the total workforce.</p>
           </div>
@@ -352,7 +560,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="ageHist"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>histogram (bar chart)</strong> grouping employees into 5-year age bands on the <strong>X-axis</strong> (e.g. "25–29", "30–34"). The <strong>Y-axis counts how many employees</strong> fall in each age band. Bars touching = continuous age data.</p>
           </div>
@@ -405,7 +613,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="deptAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>stacked bar chart</strong>. The <strong>X-axis lists the 3 departments</strong>. The <strong>Y-axis shows total employee count</strong>. Each bar is stacked: the <strong>red portion = employees who left</strong>, the <strong>green portion = employees who stayed</strong>. Read the red slice height for attrition numbers.</p>
           </div>
@@ -433,7 +641,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="deptAttrRate"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists the 3 departments</strong>. The <strong>Y-axis shows the attrition rate as a percentage</strong> (i.e., what fraction of each department's employees left). This normalises for department size, making comparisons fair.</p>
           </div>
@@ -462,7 +670,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="chart-wrap tall"><canvas id="roleAttrBar"></canvas></div>
     <div class="chart-explanation">
       <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-      <div class="exp-body"><div class="exp-row">
+      <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
         <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
           <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from highest attrition at the top to lowest at the bottom. The <strong>X-axis shows attrition rate (%)</strong> — how many from each role left. Bars are <span class="tag-danger">red ≥ 25%</span>, <span class="tag-warn">yellow 15–24%</span>, <span class="tag-good">green &lt; 15%</span>.</p>
         </div>
@@ -494,7 +702,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="ageAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>grouped (clustered) bar chart</strong>. The <strong>X-axis shows 5 age groups</strong> (18–24 through 55+). For each group, there are <strong>two side-by-side bars</strong>: red = employees who left, green = employees who stayed. The <strong>Y-axis counts employees</strong>. Compare red bar height vs green to see the attrition gap per age group.</p>
           </div>
@@ -522,7 +730,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap short"><canvas id="genderAttrDonut"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>segmented donut chart</strong> with four segments showing: Male who left (dark red), Male who stayed (blue), Female who left (light red/pink), Female who stayed (light pink). Segment size = employee count. Compare red-toned segments to assess gender-based attrition risk.</p>
           </div>
@@ -550,7 +758,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="eduAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>vertical bar chart</strong>. The <strong>X-axis lists 6 education fields</strong> (Life Sciences, Medical, Marketing, Technical Degree, Human Resources, Other), sorted by attrition rate (highest left). The <strong>Y-axis shows attrition rate (%)</strong> — what proportion of employees with each education field left. Colour-coded by risk level.</p>
           </div>
@@ -603,7 +811,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="incomeHist"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>histogram</strong>. The <strong>X-axis divides monthly income into $2,000-wide brackets</strong> (e.g., "$0–$2K", "$2K–$4K", up to "$18K–$20K"). The <strong>Y-axis counts how many employees</strong> fall in each bracket. Taller bars = more employees earning in that range. The shape reveals income inequality across the organisation.</p>
           </div>
@@ -631,7 +839,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="incomeCompare"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>grouped bar chart</strong> comparing income statistics between employees who <strong>Left (red bars)</strong> and those who <strong>Stayed (green bars)</strong>. The <strong>X-axis shows 4 income measures</strong>: Median Income, Mean (Average) Income, Q1 (25th percentile), and Q3 (75th percentile). The <strong>Y-axis shows the dollar amount ($)</strong>. For every measure, the "Left" bar is red and the "Stayed" bar is green — directly compare heights to see the gap.</p>
           </div>
@@ -661,7 +869,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="hikeCompare"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>grouped bar chart</strong> comparing annual salary hike percentages between employees who <strong>Left (red)</strong> and those who <strong>Stayed (green)</strong>. The <strong>X-axis shows 3 statistical measures</strong>: Median Hike, Q1 (lower end), Q3 (upper end). The <strong>Y-axis shows the percentage hike (%)</strong> received. If both groups received similar hikes, the bars will be nearly the same height — meaning raises are NOT the differentiator.</p>
           </div>
@@ -689,7 +897,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap tall"><canvas id="roleIncomeBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from highest-earning at the top to lowest at the bottom. The <strong>X-axis shows average monthly income in dollars</strong>. Bar length directly indicates earnings. Colour-coded: <span class="tag-good">green = top earners (&gt;$10K)</span>, blue = mid-range, <span class="tag-warn">yellow = low earners (&lt;$5K)</span>.</p>
           </div>
@@ -743,7 +951,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="otAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>stacked bar chart</strong>. The <strong>X-axis has two categories</strong>: "Overtime: Yes" (employees who work OT) and "Overtime: No" (employees who don't). The <strong>Y-axis counts total employees</strong>. Each bar is stacked: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. A tall red slice on the OT-Yes bar indicates overtime workers leave far more.</p>
           </div>
@@ -771,7 +979,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="wlbAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>grouped bar chart</strong>. The <strong>X-axis shows 4 Work-Life Balance ratings</strong>: 1 (Bad), 2 (Fair), 3 (Good), 4 (Excellent). For each rating, two bars appear side by side: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. The <strong>Y-axis counts employees</strong>. Compare red vs green bar height at each rating to see attrition risk at that WLB level.</p>
           </div>
@@ -800,7 +1008,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="heatmap-wrap" id="jsWlbHeatmap"></div>
     <div class="chart-explanation">
       <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-      <div class="exp-body"><div class="exp-row">
+      <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
         <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
           <p>A <strong>4×4 heatmap table</strong>. Each <strong>row represents a Job Satisfaction level</strong> (1=Low to 4=High). Each <strong>column represents a Work-Life Balance rating</strong> (1=Bad to 4=Excellent). The number in each cell = employees with that exact combination. <strong>Darker blue = more employees</strong>. Read across a row to see WLB distribution within a satisfaction level; read down a column to compare satisfaction levels at the same WLB.</p>
         </div>
@@ -852,7 +1060,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap short"><canvas id="perfDist"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>vertical bar chart</strong>. The <strong>X-axis shows the two performance ratings used</strong>: Rating 3 (Excellent) and Rating 4 (Outstanding). The <strong>Y-axis shows the count of employees</strong> who received each rating. Note: ratings 1 and 2 do not appear in the dataset — IBM's system effectively gives everyone a "pass" rating.</p>
           </div>
@@ -880,7 +1088,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap short"><canvas id="perfAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>stacked bar chart</strong>. The <strong>X-axis shows the 2 performance ratings</strong>. The <strong>Y-axis counts total employees</strong>. Each bar is split: <strong>red = left</strong>, <strong>green = stayed</strong>. Compare the <em>proportion</em> of red in each bar — if equal, performance rating doesn't predict attrition. Read alongside the Distribution chart (previous) to understand the population sizes.</p>
           </div>
@@ -908,7 +1116,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap short"><canvas id="trainSatLine"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>bar chart</strong>. The <strong>X-axis shows how many training sessions</strong> employees attended in the last year (0 to 6 times). The <strong>Y-axis shows the average Job Satisfaction score</strong> (on a 1–4 scale) for employees in each training frequency group. Compare bar heights to see if more training correlates with higher satisfaction.</p>
           </div>
@@ -938,7 +1146,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="trainPerfLine"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>line chart</strong>. The <strong>X-axis shows training frequency</strong> (0 to 6 sessions per year). The <strong>Y-axis shows the average performance rating</strong> for employees in each training group (scale compressed to 3.0–3.3 to show variation). A flat line = training has no effect on performance.</p>
           </div>
@@ -966,7 +1174,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="roleSatBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>horizontal bar chart</strong>. The <strong>Y-axis lists all 9 job roles</strong>, sorted from most to least satisfied. The <strong>X-axis shows the average Job Satisfaction score</strong> on a 1–4 scale (1=Low, 4=High). Longer bars = more satisfied roles. <span class="tag-good">Green bars</span> score ≥ 2.75; <span class="tag-warn">yellow bars</span> score below 2.75.</p>
           </div>
@@ -1019,7 +1227,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="mgrAttrLine"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>line chart</strong>. The <strong>X-axis shows 5 tenure bands</strong> with the current manager: 0–1 years, 2–3, 4–6, 7–10, and 11+ years. The <strong>Y-axis shows the attrition rate (%)</strong> for employees in each group. A downward-trending line = longer manager relationships → lower attrition. A rise at any point signals a loyalty plateau.</p>
           </div>
@@ -1047,7 +1255,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="relSatAttr"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>vertical bar chart</strong>. The <strong>X-axis shows 4 Relationship Satisfaction levels</strong> (1=Low, 2=Medium, 3=High, 4=Very High). The <strong>Y-axis shows attrition rate (%)</strong> for employees at each level. <span class="tag-danger">Red bars</span> indicate above 20% risk; blue bars show moderate risk. A declining trend from left to right would indicate better relationships = lower attrition.</p>
           </div>
@@ -1077,7 +1285,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="chart-wrap"><canvas id="yacAttrBar"></canvas></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>grouped bar chart</strong>. The <strong>X-axis shows 5 tenure bands</strong> (0–1, 2–3, 4–5, 6–10, 11+ years at IBM). For each band, two bars appear side by side: <strong>red = employees who left</strong>, <strong>green = employees who stayed</strong>. The <strong>Y-axis counts employees</strong>. A large red bar relative to green = high attrition in that tenure window.</p>
           </div>
@@ -1105,7 +1313,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="heatmap-wrap" id="deptSatHeatmap" style="padding-top:16px"></div>
       <div class="chart-explanation">
         <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-        <div class="exp-body"><div class="exp-row">
+        <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
           <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
             <p>A <strong>heatmap table</strong>. Each <strong>row is a department</strong> (Sales, R&D, HR). Each <strong>column is a Job Satisfaction rating</strong> (1=Low to 4=High). The <strong>number in each cell = how many employees</strong> in that department have that satisfaction level. <strong>Darker blue cells = more employees</strong> at that combination. Read across a row to see a department's satisfaction distribution.</p>
           </div>
@@ -1157,7 +1365,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div id="corrBars" style="padding:16px 0;"></div>
     <div class="chart-explanation">
       <button class="exp-toggle" onclick="toggleExp(this)"><span class="arrow">▾</span> 📊 Read Chart Explanation</button>
-      <div class="exp-body"><div class="exp-row">
+      <div class="exp-body"><div class="exp-body-header">📋 Chart Analysis — What this shows · Key Findings · Business Meaning</div><div class="exp-row">
         <div class="exp-col what"><div class="exp-col-label what">📊 What This Shows</div>
           <p>A <strong>horizontal ranked bar chart</strong>. The <strong>left labels name each workforce variable</strong>. The <strong>bar length shows correlation strength</strong> (longer = stronger relationship with attrition). <strong>Red bars = the variable increases attrition risk</strong>; <strong>green bars = the variable reduces attrition risk</strong>. The number at the end = the exact correlation coefficient (range: −1 to +1). Values near ±1 are very strong; values near 0 are weak.</p>
         </div>
@@ -1269,11 +1477,19 @@ function to(){return{color:'#7a8499'};}
 function axTitle(text){return{display:true,text,color:'#9aafc4',font:{size:11,weight:'500'},padding:8};}
 
 function showSection(id,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(btn)btn.classList.add('active');
-  else if(window.event&&window.event.target)window.event.target.classList.add('active');
+  /* unified handler — works for both top tab clicks AND bottom nav buttons */
+  const SECS=['overview','attrition','salary','worklife','performance','experience','correlation','insights','recommendations'];
+  const idx=SECS.indexOf(id);
+  if(typeof goTo==='function'){
+    goTo(idx>=0?idx:0);
+  } else {
+    /* goTo not yet defined (early call) — do basic activation only */
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(btn)btn.classList.add('active');
+    else if(window.event&&window.event.target)window.event.target.classList.add('active');
+  }
 }
 function toggleExp(btn){
   btn.nextElementSibling.classList.toggle('open');
@@ -1411,6 +1627,77 @@ corrData.forEach(([name,val])=>{
 });
 corrHtml+='</div>';
 corrContainer.innerHTML=corrHtml;
+</script>
+<!-- ══ FIXED SECTION NAVIGATION BAR ══ -->
+<nav class="section-nav" id="sectionNav">
+  <button class="snav-btn" id="prevBtn" onclick="navigateSection(-1)" disabled>
+    ← Previous
+  </button>
+  <div class="snav-center">
+    <div class="snav-dots" id="navDots"></div>
+    <div class="snav-label" id="navLabel">Section 1 of 9 — Overview</div>
+  </div>
+  <button class="snav-btn" id="nextBtn" onclick="navigateSection(1)">
+    Next →
+  </button>
+</nav>
+
+<script>
+/* ── SECTIONS REGISTRY ── */
+const SECTIONS=[
+  {id:'overview',   label:'📊 Overview'},
+  {id:'attrition',  label:'🔥 Attrition'},
+  {id:'salary',     label:'💰 Salary'},
+  {id:'worklife',   label:'⚖️ Work-Life'},
+  {id:'performance',label:'📈 Performance'},
+  {id:'experience', label:'🏢 Experience'},
+  {id:'correlation',label:'🔗 Correlations'},
+  {id:'insights',   label:'💡 Insights'},
+  {id:'recommendations',label:'🎯 Actions'},
+];
+let currentIdx=0;
+
+/* build progress dots */
+const dotsEl=document.getElementById('navDots');
+SECTIONS.forEach((s,i)=>{
+  const d=document.createElement('div');
+  d.className='snav-dot'+(i===0?' active':'');
+  d.title=s.label;
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function goTo(idx){
+  if(idx<0||idx>=SECTIONS.length)return;
+  const s=SECTIONS[idx];
+  /* deactivate all */
+  document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  /* activate target section */
+  document.getElementById(s.id).classList.add('active');
+  /* activate matching top tab button */
+  const tabs=document.querySelectorAll('.tab-btn');
+  if(tabs[idx])tabs[idx].classList.add('active');
+  /* update progress dots */
+  document.querySelectorAll('.snav-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* update centre label */
+  document.getElementById('navLabel').textContent=`Section ${idx+1} of ${SECTIONS.length} — ${s.label.replace(/^\S+\s/,'')}`;
+  /* update Prev button */
+  const prevBtn=document.getElementById('prevBtn');
+  prevBtn.disabled=(idx===0);
+  prevBtn.innerHTML=idx>0?`← ${SECTIONS[idx-1].label}`:'← Previous';
+  /* update Next button */
+  const nextBtn=document.getElementById('nextBtn');
+  nextBtn.disabled=(idx===SECTIONS.length-1);
+  nextBtn.innerHTML=idx<SECTIONS.length-1?`Next: ${SECTIONS[idx+1].label} →`:'Next →';
+  currentIdx=idx;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function navigateSection(dir){goTo(currentIdx+dir);}
+
+/* initialise on load */
+goTo(0);
 </script>
 </body>
 </html>
