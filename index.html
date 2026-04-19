@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBM HR Analytics — Attrition Intelligence by Jony</title>
+<title>HR Analytics — Attrition Intelligence by Jony</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -406,7 +406,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="header-left">
     <div class="logo-mark">HR</div>
     <div>
-      <div class="header-title">IBM HR Analytics — Attrition Intelligence by Jony</div>
+      <div class="header-title">HR Analytics — Attrition Intelligence by Jony</div>
       <div class="header-sub">Workforce Data · 1,470 Employees · IBM Watson Dataset</div>
     </div>
   </div>
@@ -1467,23 +1467,33 @@ Chart.defaults.color='#7a8499';
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.font.size=11;
 
-const RED='#ff4d4d',RED_T='rgba(255,77,77,0.7)';
-const GREEN='#00e5a0',GREEN_T='rgba(0,229,160,0.7)';
-const BLUE='#4d9fff',BLUE_T='rgba(77,159,255,0.7)';
-const YELLOW='#ffb84d',YELLOW_T='rgba(255,184,77,0.7)';
+// ── BASE COLORS ──
+const RED='#ff4d4d',RED_T='rgba(255,77,77,0.75)';
+const GREEN='#00e5a0',GREEN_T='rgba(0,229,160,0.75)';
+const BLUE='#4d9fff',BLUE_T='rgba(77,159,255,0.75)';
+const YELLOW='#ffb84d',YELLOW_T='rgba(255,184,77,0.75)';
+// Extended palette
+const PURPLE='#a855f7',PURPLE_T='rgba(168,85,247,0.78)';
+const TEAL='#14b8a6',TEAL_T='rgba(20,184,166,0.78)';
+const ORANGE='#f97316',ORANGE_T='rgba(249,115,22,0.78)';
+const PINK='#ec4899',PINK_T='rgba(236,72,153,0.78)';
+const INDIGO='#6366f1',INDIGO_T='rgba(99,102,241,0.78)';
+const LIME='#84cc16',LIME_T='rgba(132,204,22,0.78)';
+const CYAN='#06b6d4',CYAN_T='rgba(6,182,212,0.78)';
+const ROSE='#f43f5e',ROSE_T='rgba(244,63,94,0.80)';
+const AMBER='#f59e0b',AMBER_T='rgba(245,158,11,0.78)';
+const EMERALD='#10b981',EMERALD_T='rgba(16,185,129,0.78)';
+
 const gc='rgba(255,255,255,0.04)';
 function go(){return{color:gc,drawBorder:false};}
 function to(){return{color:'#7a8499'};}
 function axTitle(text){return{display:true,text,color:'#9aafc4',font:{size:11,weight:'500'},padding:8};}
 
 function showSection(id,btn){
-  /* unified handler — works for both top tab clicks AND bottom nav buttons */
   const SECS=['overview','attrition','salary','worklife','performance','experience','correlation','insights','recommendations'];
   const idx=SECS.indexOf(id);
-  if(typeof goTo==='function'){
-    goTo(idx>=0?idx:0);
-  } else {
-    /* goTo not yet defined (early call) — do basic activation only */
+  if(typeof goTo==='function'){goTo(idx>=0?idx:0);}
+  else{
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -1516,47 +1526,47 @@ const incHistRaw={0:33,2000:509,4000:372,6000:175,8000:100,10000:86,12000:53,140
 
 function attrRate(d){return Math.round(d.Yes/(d.Yes+d.No)*100);}
 
-// ── OVERVIEW ──
-new Chart(document.getElementById('attrDonut'),{type:'doughnut',data:{labels:['Left — 237 (16.1%)','Stayed — 1,233 (83.9%)'],datasets:[{data:[237,1233],backgroundColor:[RED,GREEN],borderWidth:0,hoverOffset:8}]},options:{plugins:{legend:{position:'bottom',labels:{padding:20,font:{size:12}}}},cutout:'68%'}});
+// ══ OVERVIEW — indigo/cyan/pink palette ══
+new Chart(document.getElementById('attrDonut'),{type:'doughnut',data:{labels:['Left — 237 (16.1%)','Stayed — 1,233 (83.9%)'],datasets:[{data:[237,1233],backgroundColor:[ROSE,EMERALD_T],borderWidth:0,hoverOffset:10}]},options:{plugins:{legend:{position:'bottom',labels:{padding:20,font:{size:12},color:'#9aafc4'}}},cutout:'68%'}});
 
-new Chart(document.getElementById('deptBar'),{type:'bar',data:{labels:['Research & Dev (R&D)','Sales','Human Resources'],datasets:[{label:'Number of Employees',data:[961,446,63],backgroundColor:[BLUE_T,YELLOW_T,GREEN_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Department')}}}});
+new Chart(document.getElementById('deptBar'),{type:'bar',data:{labels:['Research & Dev (R&D)','Sales','Human Resources'],datasets:[{label:'Number of Employees',data:[961,446,63],backgroundColor:[INDIGO_T,CYAN_T,PURPLE_T],borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Department')}}}});
 
-new Chart(document.getElementById('genderPie'),{type:'pie',data:{labels:['Male — 882 (60.4%)','Female — 588 (39.6%)'],datasets:[{data:[882,588],backgroundColor:[BLUE_T,'rgba(255,130,200,0.7)'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12}}}}}});
+new Chart(document.getElementById('genderPie'),{type:'pie',data:{labels:['Male — 882 (60.4%)','Female — 588 (39.6%)'],datasets:[{data:[882,588],backgroundColor:[CYAN_T,PINK_T],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12},color:'#9aafc4'}}}}});
 
-new Chart(document.getElementById('ageHist'),{type:'bar',data:{labels:['15–19','20–24','25–29','30–34','35–39','40–44','45–49','50–54','55–59','60+'],datasets:[{label:'Number of Employees',data:Object.values(ageHistRaw),backgroundColor:BLUE_T,borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Age Group (5-year bands)')}}}});
+const ageGrad=['rgba(99,102,241,0.8)','rgba(99,102,241,0.75)','rgba(14,165,233,0.8)','rgba(6,182,212,0.8)','rgba(6,182,212,0.75)','rgba(20,184,166,0.8)','rgba(16,185,129,0.75)','rgba(132,204,22,0.75)','rgba(245,158,11,0.75)','rgba(249,115,22,0.70)'];
+new Chart(document.getElementById('ageHist'),{type:'bar',data:{labels:['15–19','20–24','25–29','30–34','35–39','40–44','45–49','50–54','55–59','60+'],datasets:[{label:'Number of Employees',data:Object.values(ageHistRaw),backgroundColor:ageGrad,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Age Group (5-year bands)')}}}});
 
-// ── ATTRITION ──
-new Chart(document.getElementById('deptAttrBar'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Left (Attrition = Yes)',data:[92,133,12],backgroundColor:RED_T,borderRadius:4},{label:'Stayed (Attrition = No)',data:[354,828,51],backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+// ══ ATTRITION — orange/rose/teal ══
+new Chart(document.getElementById('deptAttrBar'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Left (Attrition = Yes)',data:[92,133,12],backgroundColor:ORANGE_T,borderRadius:4},{label:'Stayed (Attrition = No)',data:[354,828,51],backgroundColor:TEAL_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
-new Chart(document.getElementById('deptAttrRate'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Attrition Rate (%)',data:[20.6,13.8,19.0],backgroundColor:[RED_T,GREEN_T,YELLOW_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each dept that left'),max:25},x:{grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')}}}});
+new Chart(document.getElementById('deptAttrRate'),{type:'bar',data:{labels:['Sales (446 total)','Research & Dev (961 total)','Human Resources (63 total)'],datasets:[{label:'Attrition Rate (%)',data:[20.6,13.8,19.0],backgroundColor:[ROSE_T,EMERALD_T,AMBER_T],borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each dept that left'),max:25},x:{grid:{display:false},ticks:to(),title:axTitle('Department (total headcount shown)')}}}});
 
 const rolesSorted=Object.entries(roleAttrRaw).map(([k,v])=>({name:k,rate:attrRate(v)})).sort((a,b)=>b.rate-a.rate);
-new Chart(document.getElementById('roleAttrBar'),{type:'bar',data:{labels:rolesSorted.map(r=>r.name),datasets:[{label:'Attrition Rate (%)',data:rolesSorted.map(r=>r.rate),backgroundColor:rolesSorted.map(r=>r.rate>25?RED_T:r.rate>15?YELLOW_T:GREEN_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each role that left'),max:45},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+new Chart(document.getElementById('roleAttrBar'),{type:'bar',data:{labels:rolesSorted.map(r=>r.name),datasets:[{label:'Attrition Rate (%)',data:rolesSorted.map(r=>r.rate),backgroundColor:rolesSorted.map(r=>r.rate>30?'rgba(244,63,94,0.85)':r.rate>20?'rgba(249,115,22,0.80)':r.rate>15?'rgba(245,158,11,0.80)':r.rate>8?'rgba(20,184,166,0.80)':'rgba(16,185,129,0.85)'),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % of each role that left'),max:45},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
 
 const ageBinsOrdered=['18-24','25-34','35-44','45-54','55+'];
-new Chart(document.getElementById('ageAttrBar'),{type:'bar',data:{labels:ageBinsOrdered,datasets:[{label:'Left (Yes)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].Yes),backgroundColor:RED_T,borderRadius:4},{label:'Stayed (No)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].No),backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Age Group')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+new Chart(document.getElementById('ageAttrBar'),{type:'bar',data:{labels:ageBinsOrdered,datasets:[{label:'Left (Yes)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].Yes),backgroundColor:ROSE_T,borderRadius:5},{label:'Stayed (No)',data:ageBinsOrdered.map(k=>ageBinsRaw[k].No),backgroundColor:INDIGO_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:11},color:'#9aafc4'}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Age Group')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
-new Chart(document.getElementById('genderAttrDonut'),{type:'doughnut',data:{labels:['Male Left — 150 (17%)','Male Stayed — 732','Female Left — 87 (14.8%)','Female Stayed — 501'],datasets:[{data:[150,732,87,501],backgroundColor:[RED_T,BLUE_T,'rgba(255,130,200,0.5)','rgba(255,130,200,0.2)'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:10}}}},cutout:'60%'}});
+new Chart(document.getElementById('genderAttrDonut'),{type:'doughnut',data:{labels:['Male Left — 150 (17%)','Male Stayed — 732','Female Left — 87 (14.8%)','Female Stayed — 501'],datasets:[{data:[150,732,87,501],backgroundColor:[ORANGE_T,CYAN_T,PINK_T,'rgba(6,182,212,0.22)'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:10},color:'#9aafc4'}}},cutout:'60%'}});
 
 const eduSorted=Object.entries(eduAttrRaw).map(([k,v])=>({name:k,rate:attrRate(v)})).sort((a,b)=>b.rate-a.rate);
-new Chart(document.getElementById('eduAttrBar'),{type:'bar',data:{labels:eduSorted.map(e=>e.name),datasets:[{label:'Attrition Rate (%)',data:eduSorted.map(e=>e.rate),backgroundColor:eduSorted.map(e=>e.rate>25?RED_T:e.rate>15?YELLOW_T:GREEN_T),borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%)')},x:{grid:{display:false},ticks:{...to(),maxRotation:20},title:axTitle('Education Field')}}}});
+new Chart(document.getElementById('eduAttrBar'),{type:'bar',data:{labels:eduSorted.map(e=>e.name),datasets:[{label:'Attrition Rate (%)',data:eduSorted.map(e=>e.rate),backgroundColor:eduSorted.map(e=>e.rate>25?ROSE_T:e.rate>15?AMBER_T:TEAL_T),borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%)')},x:{grid:{display:false},ticks:{...to(),maxRotation:20},title:axTitle('Education Field')}}}});
 
-// ── SALARY ──
-new Chart(document.getElementById('incomeHist'),{type:'bar',data:{labels:['$0–2K','$2K–4K','$4K–6K','$6K–8K','$8K–10K','$10K–12K','$12K–14K','$14K–16K','$16K–18K','$18K–20K'],datasets:[{label:'Number of Employees',data:Object.values(incHistRaw),backgroundColor:BLUE_T,borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:{...to(),maxRotation:30,font:{size:10}},title:axTitle('Monthly Income Range ($)')}}}});
+// ══ SALARY — rainbow histogram, rose/emerald comparison, amber/purple hike ══
+const incColors=['rgba(244,63,94,0.8)','rgba(249,115,22,0.8)','rgba(245,158,11,0.8)','rgba(132,204,22,0.75)','rgba(20,184,166,0.8)','rgba(6,182,212,0.8)','rgba(99,102,241,0.8)','rgba(168,85,247,0.8)','rgba(236,72,153,0.75)','rgba(244,63,94,0.55)'];
+new Chart(document.getElementById('incomeHist'),{type:'bar',data:{labels:['$0–2K','$2K–4K','$4K–6K','$6K–8K','$8K–10K','$10K–12K','$12K–14K','$14K–16K','$16K–18K','$18K–20K'],datasets:[{label:'Number of Employees',data:Object.values(incHistRaw),backgroundColor:incColors,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:{...to(),maxRotation:30,font:{size:10}},title:axTitle('Monthly Income Range ($)')}}}});
 
-// Income comparison grouped bar (replaces box plot)
-new Chart(document.getElementById('incomeCompare'),{type:'bar',data:{labels:['Median Income','Mean (Avg) Income','Q1 — Bottom 25%','Q3 — Top 25%'],datasets:[{label:'Left (Attrition = Yes)',data:[3202,4787,2373,5916],backgroundColor:RED_T,borderRadius:5,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[5204,6832,3211,8834],backgroundColor:GREEN_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'K'},title:axTitle('Monthly Income ($)'),beginAtZero:true},x:{grid:{display:false},ticks:to(),title:axTitle('Income Statistic')}}}});
+new Chart(document.getElementById('incomeCompare'),{type:'bar',data:{labels:['Median Income','Mean (Avg) Income','Q1 — Bottom 25%','Q3 — Top 25%'],datasets:[{label:'Left (Attrition = Yes)',data:[3202,4787,2373,5916],backgroundColor:ROSE_T,borderRadius:6,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[5204,6832,3211,8834],backgroundColor:EMERALD_T,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'K'},title:axTitle('Monthly Income ($)'),beginAtZero:true},x:{grid:{display:false},ticks:to(),title:axTitle('Income Statistic')}}}});
 
-// Hike comparison grouped bar (replaces box plot)
-new Chart(document.getElementById('hikeCompare'),{type:'bar',data:{labels:['Median Hike %','Q1 — Lower End','Q3 — Upper End'],datasets:[{label:'Left (Attrition = Yes)',data:[14,12,17],backgroundColor:RED_T,borderRadius:5,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[14,12,18],backgroundColor:GREEN_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Salary Hike Percentage (%)'),beginAtZero:false,min:8,max:22},x:{grid:{display:false},ticks:to(),title:axTitle('Hike Statistic')}}}});
+new Chart(document.getElementById('hikeCompare'),{type:'bar',data:{labels:['Median Hike %','Q1 — Lower End','Q3 — Upper End'],datasets:[{label:'Left (Attrition = Yes)',data:[14,12,17],backgroundColor:AMBER_T,borderRadius:6,borderSkipped:false},{label:'Stayed (Attrition = No)',data:[14,12,18],backgroundColor:PURPLE_T,borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Salary Hike Percentage (%)'),beginAtZero:false,min:8,max:22},x:{grid:{display:false},ticks:to(),title:axTitle('Hike Statistic')}}}});
 
 const roleSorted=Object.entries(roleIncome).sort((a,b)=>b[1]-a[1]);
-new Chart(document.getElementById('roleIncomeBar'),{type:'bar',data:{labels:roleSorted.map(r=>r[0]),datasets:[{label:'Average Monthly Income ($)',data:roleSorted.map(r=>r[1]),backgroundColor:roleSorted.map(r=>r[1]>10000?GREEN_T:r[1]>5000?BLUE_T:YELLOW_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'k'},title:axTitle('Average Monthly Income ($)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+new Chart(document.getElementById('roleIncomeBar'),{type:'bar',data:{labels:roleSorted.map(r=>r[0]),datasets:[{label:'Average Monthly Income ($)',data:roleSorted.map(r=>r[1]),backgroundColor:roleSorted.map(r=>r[1]>12000?AMBER_T:r[1]>7000?EMERALD_T:r[1]>4000?CYAN_T:ORANGE_T),borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:{...to(),callback:v=>'$'+(v/1000).toFixed(0)+'k'},title:axTitle('Average Monthly Income ($)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
 
-// ── WORK-LIFE ──
-new Chart(document.getElementById('otAttrBar'),{type:'bar',data:{labels:['Overtime: Yes (416 employees)','Overtime: No (1,054 employees)'],datasets:[{label:'Left (Attrition = Yes)',data:[127,110],backgroundColor:RED_T,borderRadius:5},{label:'Stayed (Attrition = No)',data:[289,944],backgroundColor:GREEN_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Overtime Status')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+// ══ WORK-LIFE — rose/teal stacked; gradient WLB bars ══
+new Chart(document.getElementById('otAttrBar'),{type:'bar',data:{labels:['Overtime: Yes (416 employees)','Overtime: No (1,054 employees)'],datasets:[{label:'Left (Attrition = Yes)',data:[127,110],backgroundColor:ROSE_T,borderRadius:5},{label:'Stayed (Attrition = No)',data:[289,944],backgroundColor:TEAL_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Overtime Status')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
-new Chart(document.getElementById('wlbAttrBar'),{type:'bar',data:{labels:Object.keys(wlbAttrRaw),datasets:[{label:'Left (Attrition = Yes)',data:Object.values(wlbAttrRaw).map(d=>d.Yes),backgroundColor:RED_T,borderRadius:5},{label:'Stayed (Attrition = No)',data:Object.values(wlbAttrRaw).map(d=>d.No),backgroundColor:GREEN_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Work-Life Balance Rating (1=Bad → 4=Excellent)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+new Chart(document.getElementById('wlbAttrBar'),{type:'bar',data:{labels:Object.keys(wlbAttrRaw),datasets:[{label:'Left (Attrition = Yes)',data:Object.values(wlbAttrRaw).map(d=>d.Yes),backgroundColor:['rgba(244,63,94,0.85)','rgba(249,115,22,0.80)','rgba(245,158,11,0.80)','rgba(16,185,129,0.80)'],borderRadius:5},{label:'Stayed (Attrition = No)',data:Object.values(wlbAttrRaw).map(d=>d.No),backgroundColor:'rgba(20,184,166,0.30)',borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Work-Life Balance Rating (1=Bad → 4=Excellent)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
 function makeHeatmap(cid,rowLabels,colLabels,data,rTitle,cTitle){
   const mx=Math.max(...data.flat());
@@ -1576,57 +1586,45 @@ function makeHeatmap(cid,rowLabels,colLabels,data,rTitle,cTitle){
   h+='</tbody></table>';
   document.getElementById(cid).innerHTML=h;
 }
+makeHeatmap('jsWlbHeatmap',['JS 1 — Low Satisfaction','JS 2 — Below Average','JS 3 — Good','JS 4 — High Satisfaction'],['WLB 1 — Bad','WLB 2 — Fair','WLB 3 — Good','WLB 4 — Excellent'],[[17,61,182,29],[18,58,175,29],[21,101,273,47],[24,124,263,48]],'Job Satisfaction (row)','Work-Life Balance (column)');
 
-makeHeatmap('jsWlbHeatmap',
-  ['JS 1 — Low Satisfaction','JS 2 — Below Average','JS 3 — Good','JS 4 — High Satisfaction'],
-  ['WLB 1 — Bad','WLB 2 — Fair','WLB 3 — Good','WLB 4 — Excellent'],
-  [[17,61,182,29],[18,58,175,29],[21,101,273,47],[24,124,263,48]],
-  'Job Satisfaction (row)','Work-Life Balance (column)');
+// ══ PERFORMANCE — indigo/purple, cyan line, amber bars ══
+new Chart(document.getElementById('perfDist'),{type:'bar',data:{labels:['Rating 3 — Excellent','Rating 4 — Outstanding'],datasets:[{label:'Number of Employees',data:[1244,226],backgroundColor:[INDIGO_T,PURPLE_T],borderRadius:8,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Performance Rating')}}}});
 
-// ── PERFORMANCE ──
-new Chart(document.getElementById('perfDist'),{type:'bar',data:{labels:['Rating 3 — Excellent','Rating 4 — Outstanding'],datasets:[{label:'Number of Employees',data:[1244,226],backgroundColor:[GREEN_T,BLUE_T],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')},x:{grid:{display:false},ticks:to(),title:axTitle('Performance Rating')}}}});
+new Chart(document.getElementById('perfAttrBar'),{type:'bar',data:{labels:['Rating 3 — Excellent (1,244 total)','Rating 4 — Outstanding (226 total)'],datasets:[{label:'Left (Yes)',data:[200,37],backgroundColor:ORANGE_T,borderRadius:4},{label:'Stayed (No)',data:[1044,189],backgroundColor:INDIGO_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:11},color:'#9aafc4'}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Performance Rating')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
-new Chart(document.getElementById('perfAttrBar'),{type:'bar',data:{labels:['Rating 3 — Excellent (1,244 total)','Rating 4 — Outstanding (226 total)'],datasets:[{label:'Left (Yes)',data:[200,37],backgroundColor:RED_T,borderRadius:4},{label:'Stayed (No)',data:[1044,189],backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{x:{stacked:true,grid:{display:false},ticks:to(),title:axTitle('Performance Rating')},y:{stacked:true,grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+new Chart(document.getElementById('trainPerfLine'),{type:'line',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Performance Rating',data:Object.values(trainPerfRaw),borderColor:CYAN,backgroundColor:'rgba(6,182,212,0.10)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:CYAN,pointBorderColor:'#0e1320',pointBorderWidth:2}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{y:{grid:go(),ticks:to(),min:3.0,max:3.3,title:axTitle('Average Performance Rating (3.0–4.0 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
 
-new Chart(document.getElementById('trainPerfLine'),{type:'line',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Performance Rating',data:Object.values(trainPerfRaw),borderColor:GREEN,backgroundColor:'rgba(0,229,160,0.1)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:GREEN}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:to(),min:3.0,max:3.3,title:axTitle('Average Performance Rating (3.0–4.0 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
-
-new Chart(document.getElementById('trainSatLine'),{type:'bar',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Job Satisfaction Score',data:Object.values(trainSatRaw),backgroundColor:BLUE_T,borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{grid:go(),ticks:to(),min:2.4,max:3.2,title:axTitle('Average Job Satisfaction (1–4 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
+new Chart(document.getElementById('trainSatLine'),{type:'bar',data:{labels:['0 sessions','1 session','2 sessions','3 sessions','4 sessions','5 sessions','6 sessions'],datasets:[{label:'Avg Job Satisfaction Score',data:Object.values(trainSatRaw),backgroundColor:['rgba(245,158,11,0.85)','rgba(245,158,11,0.65)','rgba(245,158,11,0.75)','rgba(245,158,11,0.60)','rgba(245,158,11,0.80)','rgba(245,158,11,0.65)','rgba(245,158,11,0.75)'],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{labels:{font:{size:11},color:'#9aafc4'}}},scales:{y:{grid:go(),ticks:to(),min:2.4,max:3.2,title:axTitle('Average Job Satisfaction (1–4 scale)')},x:{grid:{display:false},ticks:to(),title:axTitle('Number of Training Sessions per Year')}}}});
 
 const roleSatSorted=Object.entries(roleSatRaw).sort((a,b)=>b[1]-a[1]);
-new Chart(document.getElementById('roleSatBar'),{type:'bar',data:{labels:roleSatSorted.map(r=>r[0]),datasets:[{label:'Avg Job Satisfaction (1–4)',data:roleSatSorted.map(r=>r[1]),backgroundColor:roleSatSorted.map(r=>r[1]>=2.75?GREEN_T:YELLOW_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:to(),min:2.4,max:3.0,title:axTitle('Average Job Satisfaction Score (1=Low → 4=High)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
+new Chart(document.getElementById('roleSatBar'),{type:'bar',data:{labels:roleSatSorted.map(r=>r[0]),datasets:[{label:'Avg Job Satisfaction (1–4)',data:roleSatSorted.map(r=>r[1]),backgroundColor:roleSatSorted.map(r=>r[1]>=2.75?EMERALD_T:r[1]>=2.68?AMBER_T:ROSE_T),borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:go(),ticks:to(),min:2.4,max:3.0,title:axTitle('Average Job Satisfaction Score (1=Low → 4=High)')},y:{grid:{display:false},ticks:to(),title:axTitle('Job Role')}}}});
 
-// ── EXPERIENCE ──
+// ══ EXPERIENCE — purple line, coral→blue rel-sat, heat-scale tenure ══
 const mgrOrder=['0–1 yrs','2–3 yrs','4–6 yrs','7–10 yrs','11+ yrs'];
-new Chart(document.getElementById('mgrAttrLine'),{type:'line',data:{labels:mgrOrder,datasets:[{label:'Attrition Rate (%)',data:mgrOrder.map(k=>attrRate(mgrAttrRaw[k])),borderColor:RED,backgroundColor:'rgba(255,77,77,0.1)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:RED}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Years with Current Manager')}}}});
+new Chart(document.getElementById('mgrAttrLine'),{type:'line',data:{labels:mgrOrder,datasets:[{label:'Attrition Rate (%)',data:mgrOrder.map(k=>attrRate(mgrAttrRaw[k])),borderColor:PURPLE,backgroundColor:'rgba(168,85,247,0.10)',tension:.4,fill:true,pointRadius:7,pointBackgroundColor:mgrOrder.map(k=>attrRate(mgrAttrRaw[k])>20?ROSE:PURPLE),pointBorderColor:'#0e1320',pointBorderWidth:2}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Years with Current Manager')}}}});
 
-new Chart(document.getElementById('relSatAttr'),{type:'bar',data:{labels:Object.keys(relSatAttrRaw),datasets:[{label:'Attrition Rate (%)',data:Object.values(relSatAttrRaw).map(attrRate),backgroundColor:Object.values(relSatAttrRaw).map(d=>attrRate(d)>20?RED_T:BLUE_T),borderRadius:5,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Relationship Satisfaction Rating (1=Low → 4=Very High)')}}}});
+new Chart(document.getElementById('relSatAttr'),{type:'bar',data:{labels:Object.keys(relSatAttrRaw),datasets:[{label:'Attrition Rate (%)',data:Object.values(relSatAttrRaw).map(attrRate),backgroundColor:['rgba(244,63,94,0.85)','rgba(99,102,241,0.75)','rgba(99,102,241,0.75)','rgba(6,182,212,0.75)'],borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{grid:go(),ticks:{...to(),callback:v=>v+'%'},title:axTitle('Attrition Rate (%) — % who left')},x:{grid:{display:false},ticks:to(),title:axTitle('Relationship Satisfaction Rating (1=Low → 4=Very High)')}}}});
 
 const yacOrder=['0–1 yrs','2–3 yrs','4–5 yrs','6–10 yrs','11+ yrs'];
-new Chart(document.getElementById('yacAttrBar'),{type:'bar',data:{labels:yacOrder,datasets:[{label:'Left (Attrition = Yes)',data:yacOrder.map(k=>yacAttrRaw[k].Yes),backgroundColor:RED_T,borderRadius:4},{label:'Stayed (Attrition = No)',data:yacOrder.map(k=>yacAttrRaw[k].No),backgroundColor:GREEN_T,borderRadius:4}]},options:{plugins:{legend:{labels:{font:{size:12}}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Years at Company (Tenure Band)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
+new Chart(document.getElementById('yacAttrBar'),{type:'bar',data:{labels:yacOrder,datasets:[{label:'Left (Attrition = Yes)',data:yacOrder.map(k=>yacAttrRaw[k].Yes),backgroundColor:['rgba(244,63,94,0.85)','rgba(249,115,22,0.80)','rgba(245,158,11,0.80)','rgba(20,184,166,0.75)','rgba(16,185,129,0.80)'],borderRadius:5},{label:'Stayed (Attrition = No)',data:yacOrder.map(k=>yacAttrRaw[k].No),backgroundColor:INDIGO_T,borderRadius:5}]},options:{plugins:{legend:{labels:{font:{size:12},color:'#9aafc4'}}},scales:{x:{grid:{display:false},ticks:to(),title:axTitle('Years at Company (Tenure Band)')},y:{grid:go(),ticks:to(),title:axTitle('Number of Employees')}}}});
 
-makeHeatmap('deptSatHeatmap',
-  ['Sales','Research & Development (R&D)','Human Resources (HR)'],
-  ['Sat 1 — Low','Sat 2 — Below Avg','Sat 3 — Good','Sat 4 — High'],
-  [[86,86,127,147],[192,174,300,295],[11,20,15,17]],
-  'Department (row)','Job Satisfaction Level (column)');
+makeHeatmap('deptSatHeatmap',['Sales','Research & Development (R&D)','Human Resources (HR)'],['Sat 1 — Low','Sat 2 — Below Avg','Sat 3 — Good','Sat 4 — High'],[[86,86,127,147],[192,174,300,295],[11,20,15,17]],'Department (row)','Job Satisfaction Level (column)');
 
-// ── CORRELATION ──
+// ══ CORRELATION — rose positive / emerald negative ══
 const corrContainer=document.getElementById('corrBars');
 const maxCorr=Math.max(...corrData.map(d=>Math.abs(d[1])));
 let corrHtml='<div class="corr-grid">';
 corrData.forEach(([name,val])=>{
   const pct=Math.abs(val)/maxCorr*100;
-  const color=val>0?RED:GREEN;
-  const colorT=val>0?'rgba(255,77,77,0.7)':'rgba(0,229,160,0.7)';
+  const color=val>0?ROSE:EMERALD;
+  const colorT=val>0?'rgba(244,63,94,0.75)':'rgba(16,185,129,0.75)';
   const dir=val>0?'↑ increases attrition':'↓ decreases attrition';
-  corrHtml+=`<div class="corr-row">
-    <div class="corr-label">${name}</div>
-    <div class="corr-bar-wrap"><div class="corr-bar" style="width:${pct}%;background:${colorT}"><span class="corr-val" style="color:${color}">${val>0?'+':''}${val}</span></div></div>
-    <span style="font-size:10px;color:${color};width:160px;flex-shrink:0;margin-left:8px">${dir}</span>
-  </div>`;
+  corrHtml+=`<div class="corr-row"><div class="corr-label">${name}</div><div class="corr-bar-wrap"><div class="corr-bar" style="width:${pct}%;background:${colorT}"><span class="corr-val" style="color:${color}">${val>0?'+':''}${val}</span></div></div><span style="font-size:10px;color:${color};width:160px;flex-shrink:0;margin-left:8px">${dir}</span></div>`;
 });
 corrHtml+='</div>';
 corrContainer.innerHTML=corrHtml;
+
 </script>
 <!-- ══ FIXED SECTION NAVIGATION BAR ══ -->
 <nav class="section-nav" id="sectionNav">
